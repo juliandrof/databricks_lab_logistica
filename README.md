@@ -166,9 +166,12 @@ databricks_lab_logistica/
 ### Passo 1: Importar o Repositório
 
 1. No Databricks, vá em **Workspace** → **Repos**
-2. Clique em **Add** → **Git repository**
-3. Cole a URL deste repositório
-4. Clique em **Create Repo**
+2. Clique em **Add** → **Git folder**
+3. Cole a URL abaixo e clique em **Create Repo**
+
+```
+https://github.com/juliandrof/databricks_lab_logistica.git
+```
 
 ### Passo 2: Configurar o Catálogo
 
