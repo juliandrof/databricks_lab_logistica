@@ -26,7 +26,7 @@
       <img src="images/juliandro_circle.png" width="120" style="border-radius:50%"><br>
       <strong>Juliandro Figueiró</strong><br>
       <em>Sr. Solution Architect</em><br>
-      <a href="https://www.linkedin.com/in/juliandrof/">LinkedIn</a>
+      <a href="https://www.linkedin.com/in/juliandro/">LinkedIn</a>
     </td>
     <td align="center" width="300">
       <img src="images/jean_circle.png" width="120" style="border-radius:50%"><br>
