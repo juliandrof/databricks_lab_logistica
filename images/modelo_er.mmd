@@ -1,0 +1,110 @@
+---
+title: Modelo de Dados - Workshop de Logistica
+---
+erDiagram
+    clientes {
+        INT id_cliente PK
+        STRING cnpj
+        STRING razao_social
+        STRING uf
+        STRING cidade
+        STRING cep
+        DOUBLE latitude
+        DOUBLE longitude
+    }
+
+    caminhoes {
+        INT id_caminhao PK
+        STRING placa
+        STRING tipo
+        DOUBLE capacidade_toneladas
+        DOUBLE comprimento_m
+        DOUBLE largura_m
+        DOUBLE altura_m
+        DOUBLE volume_m3
+        STRING marca
+        STRING modelo
+    }
+
+    motoristas {
+        INT id_motorista PK
+        STRING cpf
+        STRING nome
+        STRING celular
+        STRING cnh_categoria
+        INT id_caminhao FK
+        STRING status
+        DOUBLE avaliacao
+    }
+
+    pedidos {
+        LONG id_pedido PK
+        INT id_cliente FK
+        TIMESTAMP data_pedido
+        DOUBLE peso_total_kg
+        DOUBLE valor_frete
+        STRING tipo_frete
+        STRING prioridade
+        STRING cidade_origem
+        STRING cidade_destino
+    }
+
+    notas_fiscais {
+        LONG id_nf PK
+        STRING numero_nf
+        LONG id_pedido FK
+        TIMESTAMP data_emissao
+        DOUBLE valor_total
+    }
+
+    itens_nf {
+        LONG id_item PK
+        LONG id_nf FK
+        INT id_produto FK
+        STRING descricao
+        INT quantidade
+        DOUBLE valor_unitario
+        DOUBLE peso_kg
+    }
+
+    produtos_referencia {
+        INT id_produto PK
+        STRING descricao
+        STRING categoria
+        DOUBLE peso_medio_kg
+        DOUBLE valor_medio
+    }
+
+    movimento_cargas {
+        LONG id_carga PK
+        INT id_caminhao FK
+        STRING placa
+        STRING tipo_frete
+        STRING cidade_origem
+        STRING cidade_destino
+        STRING pedidos_json
+    }
+
+    historico_status {
+        LONG id_movimento PK
+        LONG id_carga FK
+        INT id_status FK
+        TIMESTAMP timestamp
+        DOUBLE latitude
+        DOUBLE longitude
+    }
+
+    status_transporte_ref {
+        INT id_status PK
+        STRING descricao
+        INT ordem
+    }
+
+    motoristas }|--|| caminhoes : "dirige"
+    pedidos }|--|| clientes : "pertence"
+    notas_fiscais }|--|| pedidos : "referencia"
+    itens_nf }|--|| notas_fiscais : "compoe"
+    itens_nf }|--|| produtos_referencia : "produto"
+    movimento_cargas }|--|| caminhoes : "transporta"
+    historico_status }|--|| movimento_cargas : "rastreia"
+    historico_status }|--|| status_transporte_ref : "tipo"

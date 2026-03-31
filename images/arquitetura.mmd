@@ -1,0 +1,96 @@
+flowchart LR
+    %% ─── SOURCES ───
+    subgraph SRC["  FONTES DE DADOS  "]
+        direction TB
+        S1["📄 JSON Files\nPedidos · NFs · Status"]
+        S2["🗂️ Cadastros\nClientes · Caminhões · Motoristas"]
+        L1(["⚡ Streaming"])
+        L2(["📦 Batch"])
+        S1 --- L1
+        S2 --- L2
+    end
+
+    %% ─── BRONZE ───
+    subgraph BRZ["  BRONZE LAYER  "]
+        direction TB
+        B1[/"bronze_pedidos\n⚡ streaming"/]
+        B2[/"bronze_status\n⚡ streaming"/]
+        B3[/"bronze_clientes"/]
+        B4[/"bronze_caminhoes"/]
+        B5[/"bronze_motoristas"/]
+        B6[/"bronze_movimento_cargas"/]
+    end
+
+    %% ─── SILVER ───
+    subgraph SLV["  SILVER LAYER  "]
+        direction TB
+        SV1[["silver_pedidos\nenriquecido c/ clientes"]]
+        SV2[["silver_itens_nf\nitens de NF explodidos"]]
+        SV3[["silver_status_transporte\nc/ descrições de status"]]
+    end
+
+    %% ─── GOLD ───
+    subgraph GLD["  GOLD LAYER  "]
+        direction TB
+        G1[("gold_volume_por_rota")]
+        G2[("gold_performance_frota")]
+        G3[("gold_status_entregas")]
+    end
+
+    %% ─── CONSUMERS ───
+    subgraph CON["  CONSUMIDORES  "]
+        direction TB
+        C1["📊 AI/BI Dashboard"]
+        C2["🤖 Genie Room"]
+        C3["🧠 ML Models"]
+    end
+
+    %% ─── EDGES: Sources → Bronze ───
+    L1 -->|"Auto Loader\nReadStream"| B1
+    L1 -->|"Auto Loader\nReadStream"| B2
+    L2 -->|"COPY INTO"| B3
+    L2 -->|"COPY INTO"| B4
+    L2 -->|"COPY INTO"| B5
+    L2 -->|"COPY INTO"| B6
+
+    %% ─── EDGES: Bronze → Silver ───
+    B1 -->|"join clientes"| SV1
+    B3 -->|"enrich"| SV1
+    B1 -->|"explode NF items"| SV2
+    B2 -->|"lookup status"| SV3
+
+    %% ─── EDGES: Silver → Gold ───
+    SV1 -->|"agg por rota"| G1
+    SV2 -->|"agg frota"| G2
+    SV3 -->|"agg entregas"| G3
+
+    %% ─── EDGES: Gold → Consumers ───
+    G1 --> C1
+    G2 --> C1
+    G3 --> C1
+    G1 --> C2
+    G3 --> C2
+    G2 --> C3
+    G3 --> C3
+
+    %% ─── STYLES ───
+    classDef sourceStyle fill:#4A90D9,stroke:#2c5f8a,color:#ffffff,font-weight:bold
+    classDef labelStyle fill:#2c5f8a,stroke:#1a3d5c,color:#ffffff,font-size:11px,rx:12,ry:12
+    classDef bronzeStyle fill:#CD7F32,stroke:#8B5A1A,color:#ffffff,font-weight:bold
+    classDef silverStyle fill:#C0C0C0,stroke:#808080,color:#1a1a1a,font-weight:bold
+    classDef goldStyle fill:#FFD700,stroke:#B8860B,color:#1a1a1a,font-weight:bold
+    classDef consumerStyle fill:#E3371E,stroke:#9c2314,color:#ffffff,font-weight:bold
+
+    class S1,S2 sourceStyle
+    class L1,L2 labelStyle
+    class B1,B2,B3,B4,B5,B6 bronzeStyle
+    class SV1,SV2,SV3 silverStyle
+    class G1,G2,G3 goldStyle
+    class C1,C2,C3 consumerStyle
+
+    %% ─── SUBGRAPH STYLES ───
+    style SRC fill:#EAF4FF,stroke:#4A90D9,stroke-width:2px,color:#1a1a1a,font-weight:bold
+    style BRZ fill:#FFF3E6,stroke:#CD7F32,stroke-width:2px,color:#1a1a1a,font-weight:bold
+    style SLV fill:#F5F5F5,stroke:#C0C0C0,stroke-width:2px,color:#1a1a1a,font-weight:bold
+    style GLD fill:#FFFBE6,stroke:#FFD700,stroke-width:2px,color:#1a1a1a,font-weight:bold
+    style CON fill:#FFEFED,stroke:#E3371E,stroke-width:2px,color:#1a1a1a,font-weight:bold
