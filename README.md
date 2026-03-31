@@ -88,7 +88,7 @@ O workshop segue a arquitetura **Medallion (Bronze → Silver → Gold)**, proce
 | `clientes` | 1.000 | Empresas do Sudeste com CNPJ, coordenadas geográficas |
 | `caminhoes` | 1.000 | Frota com tipos VUC a Rodotrem, capacidades e dimensões |
 | `motoristas` | 1.000 | Motoristas vinculados a caminhões, com CNH e avaliação |
-| `pedidos` | 10.000+ | Pedidos de transporte com frete CIF/FOB calculado |
+| `pedidos` | 10.000+ | Pedidos com totais calculados a partir dos itens das NFs (peso, volume, valor, frete) e array de NF IDs |
 | `notas_fiscais` | 60.000 | NFs vinculadas a pedidos com chave de acesso |
 | `itens_nf` | ~240.000 | Itens detalhados por NF (produtos, pesos, dimensões) |
 | `movimento_cargas` | 5.000 | Cargas em transporte com rotas e pedidos (JSON) |
