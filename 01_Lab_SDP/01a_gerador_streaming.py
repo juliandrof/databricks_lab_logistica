@@ -19,6 +19,8 @@
 dbutils.widgets.text("nome_participante", "", "Nome do Participante")
 dbutils.widgets.text("intervalo_segundos", "300", "Intervalo entre batches (s)")
 
+# COMMAND ----------
+
 nome = dbutils.widgets.get("nome_participante")
 intervalo_segundos = int(dbutils.widgets.get("intervalo_segundos"))
 

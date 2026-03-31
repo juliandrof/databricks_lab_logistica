@@ -20,13 +20,16 @@
 
 # COMMAND ----------
 
-# Configuracao do catalogo do participante
-# Substitua pelo seu nome
-nome_participante = "seu_nome"
+dbutils.widgets.text("nome_participante", "", "Nome do Participante")
+
+# COMMAND ----------
+
+nome_participante = dbutils.widgets.get("nome_participante").strip().lower().replace(" ", "_")
+assert nome_participante != "", "⚠️ Por favor, preencha seu nome no widget acima!"
 catalog_name = f"workshop_logistica_{nome_participante}"
 
 spark.sql(f"USE CATALOG {catalog_name}")
-print(f"Usando catalogo: {catalog_name}")
+print(f"✅ Usando catálogo: {catalog_name}")
 
 # COMMAND ----------
 

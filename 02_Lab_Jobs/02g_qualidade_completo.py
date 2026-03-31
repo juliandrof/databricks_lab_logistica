@@ -19,6 +19,9 @@
 # COMMAND ----------
 
 dbutils.widgets.text("nome_participante", "", "Seu Nome (sem espaços ou acentos)")
+
+# COMMAND ----------
+
 nome = dbutils.widgets.get("nome_participante").strip().lower().replace(" ", "_")
 assert nome != "", "⚠️ Por favor, preencha seu nome!"
 catalog_name = f"workshop_logistica_{nome}"

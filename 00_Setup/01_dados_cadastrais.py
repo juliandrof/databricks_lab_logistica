@@ -25,6 +25,9 @@
 # COMMAND ----------
 
 dbutils.widgets.text("nome_participante", "", "Nome do Participante")
+
+# COMMAND ----------
+
 nome_participante = dbutils.widgets.get("nome_participante").strip().lower().replace(" ", "_")
 
 if not nome_participante:
