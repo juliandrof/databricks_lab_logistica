@@ -34,6 +34,12 @@
       <em>Account Executive</em><br>
       <a href="https://www.linkedin.com/in/jeanertzogue/">LinkedIn</a>
     </td>
+    <td align="center" width="300">
+      <img src="images/marcio_circle.png" width="120" style="border-radius:50%"><br>
+      <strong>Marcio Arbex</strong><br>
+      <em>Field Engineering Director</em><br>
+      <a href="https://www.linkedin.com/in/marcioarbex/">LinkedIn</a>
+    </td>
   </tr>
 </table>
 
