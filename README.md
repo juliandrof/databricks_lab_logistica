@@ -29,10 +29,10 @@
       <a href="https://www.linkedin.com/in/juliandrof/">LinkedIn</a>
     </td>
     <td align="center" width="300">
-      <img src="images/presenter2_circle.png" width="120" style="border-radius:50%"><br>
-      <strong>[Apresentador 2]</strong><br>
-      <em>[Cargo]</em><br>
-      <a href="#">LinkedIn</a>
+      <img src="images/jean_circle.png" width="120" style="border-radius:50%"><br>
+      <strong>Jean Ertzogue</strong><br>
+      <em>Account Executive</em><br>
+      <a href="https://www.linkedin.com/in/jeanertzogue/">LinkedIn</a>
     </td>
   </tr>
 </table>
