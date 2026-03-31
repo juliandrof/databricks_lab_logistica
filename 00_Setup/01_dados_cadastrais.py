@@ -619,9 +619,17 @@ print(f"Tabela produtos_referencia criada com {df_produtos.count()} registros.")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 6. Tabela: pedidos (10.000 registros)
+# MAGIC ## 6. Geração integrada: pedidos + notas_fiscais + itens_nf
+# MAGIC
+# MAGIC **Fluxo bottom-up com integridade referencial:**
+# MAGIC 1. Para cada pedido, gera 1-6 NFs
+# MAGIC 2. Cada NF tem 2-8 itens baseados em `produtos_referencia`
+# MAGIC 3. Os totais do pedido (peso, volume, valor) são **calculados** a partir dos itens reais
+# MAGIC 4. O valor do frete é calculado com base nos totais reais
 
 # COMMAND ----------
+
+import json
 
 PRIORIDADES = ["Normal", "Expressa", "Urgente"]
 PESOS_PRIORIDADE = [70, 20, 10]
@@ -629,6 +637,10 @@ TIPOS_FRETE = ["CIF", "FOB"]
 BASE_RATES = {"Normal": 1.0, "Expressa": 1.5, "Urgente": 2.5}
 
 pedidos_data = []
+notas_data = []
+itens_data = []
+id_nf_counter = 1
+id_item_counter = 1
 
 for i in range(1, 10001):
     id_cliente = random.randint(1, 1000)
@@ -637,15 +649,8 @@ for i in range(1, 10001):
     dias_atras = random.randint(0, 90)
     data_pedido = DATA_REFERENCIA - timedelta(days=dias_atras, hours=random.randint(0, 23), minutes=random.randint(0, 59))
 
-    peso_total = round(random.uniform(50, 5000), 2)
-    volume_total = round(random.uniform(0.5, 50), 2)
-    valor_mercadoria = round(random.uniform(500, 150000), 2)
-
     tipo_frete = random.choice(TIPOS_FRETE)
     prioridade = random.choices(PRIORIDADES, weights=PESOS_PRIORIDADE)[0]
-
-    base_rate = BASE_RATES[prioridade]
-    valor_frete = round(base_rate * (peso_total * 0.15 + volume_total * 50 + valor_mercadoria * 0.02), 2)
 
     cidade_origem_idx = random.randint(0, len(CIDADES) - 1)
     cidade_destino_idx = random.randint(0, len(CIDADES) - 1)
@@ -655,13 +660,104 @@ for i in range(1, 10001):
     c_orig = CIDADES[cidade_origem_idx]
     c_dest = CIDADES[cidade_destino_idx]
 
+    # ---------- Gerar NFs e itens para este pedido (bottom-up) ----------
+    num_nfs = random.randint(1, 6)
+    pedido_peso_total = 0.0
+    pedido_volume_total = 0.0
+    pedido_valor_mercadoria = 0.0
+    nf_ids_do_pedido = []
+
+    for _ in range(num_nfs):
+        chave_acesso = ''.join([str(random.randint(0, 9)) for _ in range(44)])
+        numero_nf = f"{random.randint(1, 999999):06d}"
+        data_emissao = data_pedido + timedelta(hours=random.randint(1, 48))
+
+        nf_valor_total = 0.0
+        nf_peso_total = 0.0
+        nf_volume_total = 0.0
+        num_itens = random.randint(2, 8)
+
+        for _ in range(num_itens):
+            prod = random.choice(produtos_data)
+            # prod: (id_produto, descricao, ncm, categoria, peso_medio_kg, valor_medio)
+            quantidade = random.randint(1, 50)
+            valor_unitario = round(prod[5] * random.uniform(0.8, 1.2), 2)
+            valor_total_item = round(quantidade * valor_unitario, 2)
+            peso_item = round(prod[4] * quantidade, 2)
+
+            # Dimensões proporcionais ao peso do produto (mais realista)
+            peso_unitario = prod[4]
+            if peso_unitario < 1:
+                comprimento_cm = round(random.uniform(10, 30), 1)
+                largura_cm = round(random.uniform(8, 20), 1)
+                altura_cm = round(random.uniform(5, 15), 1)
+            elif peso_unitario < 10:
+                comprimento_cm = round(random.uniform(20, 60), 1)
+                largura_cm = round(random.uniform(15, 40), 1)
+                altura_cm = round(random.uniform(10, 30), 1)
+            elif peso_unitario < 50:
+                comprimento_cm = round(random.uniform(40, 100), 1)
+                largura_cm = round(random.uniform(30, 70), 1)
+                altura_cm = round(random.uniform(20, 50), 1)
+            else:
+                comprimento_cm = round(random.uniform(60, 150), 1)
+                largura_cm = round(random.uniform(40, 100), 1)
+                altura_cm = round(random.uniform(30, 80), 1)
+
+            # Volume do item em m³ (dimensões * quantidade)
+            volume_item_m3 = round((comprimento_cm * largura_cm * altura_cm * quantidade) / 1_000_000, 4)
+
+            itens_data.append((
+                id_item_counter, id_nf_counter, prod[0], prod[1], prod[2],
+                quantidade, "UN", valor_unitario, valor_total_item,
+                peso_item, comprimento_cm, largura_cm, altura_cm
+            ))
+
+            nf_valor_total += valor_total_item
+            nf_peso_total += peso_item
+            nf_volume_total += volume_item_m3
+            id_item_counter += 1
+
+        notas_data.append((
+            id_nf_counter, numero_nf, i, data_emissao,
+            round(nf_valor_total, 2), chave_acesso
+        ))
+        nf_ids_do_pedido.append(id_nf_counter)
+
+        # Acumular totais no pedido
+        pedido_peso_total += nf_peso_total
+        pedido_volume_total += nf_volume_total
+        pedido_valor_mercadoria += nf_valor_total
+        id_nf_counter += 1
+
+    # ---------- Calcular frete baseado nos totais reais ----------
+    pedido_peso_total = round(pedido_peso_total, 2)
+    pedido_volume_total = round(pedido_volume_total, 4)
+    pedido_valor_mercadoria = round(pedido_valor_mercadoria, 2)
+
+    base_rate = BASE_RATES[prioridade]
+    valor_frete = round(base_rate * (pedido_peso_total * 0.15 + pedido_volume_total * 50 + pedido_valor_mercadoria * 0.02), 2)
+
     pedidos_data.append((
         i, id_cliente, data_pedido,
-        peso_total, volume_total, valor_mercadoria, valor_frete,
+        pedido_peso_total, pedido_volume_total, pedido_valor_mercadoria, valor_frete,
         tipo_frete, prioridade,
-        c_orig[0], c_orig[1],  # cidade_origem, uf_origem
-        c_dest[0], c_dest[1],  # cidade_destino, uf_destino
+        c_orig[0], c_orig[1],
+        c_dest[0], c_dest[1],
+        json.dumps(nf_ids_do_pedido),
     ))
+
+    if i % 2000 == 0:
+        print(f"  Gerados {i}/10000 pedidos...")
+
+print(f"✅ Gerados {len(pedidos_data)} pedidos, {len(notas_data)} NFs e {len(itens_data)} itens com integridade referencial.")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 6a. Salvar tabela pedidos
+
+# COMMAND ----------
 
 schema_pedidos = StructType([
     StructField("id_pedido", LongType(), False),
@@ -677,70 +773,17 @@ schema_pedidos = StructType([
     StructField("uf_origem", StringType(), False),
     StructField("cidade_destino", StringType(), False),
     StructField("uf_destino", StringType(), False),
+    StructField("nf_ids_json", StringType(), False),
 ])
 
 df_pedidos = spark.createDataFrame(pedidos_data, schema=schema_pedidos)
 df_pedidos.write.mode("overwrite").saveAsTable(f"{catalog_name}.raw.pedidos")
-print(f"Tabela pedidos criada com {df_pedidos.count()} registros.")
+print(f"✅ Tabela pedidos criada com {df_pedidos.count()} registros.")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 7. Tabelas: notas_fiscais e itens_nf
-
-# COMMAND ----------
-
-import json
-
-notas_data = []
-itens_data = []
-id_nf_counter = 1
-id_item_counter = 1
-
-for pedido in pedidos_data:
-    id_pedido = pedido[0]
-    data_pedido = pedido[2]
-    num_nfs = random.randint(1, 6)
-
-    for _ in range(num_nfs):
-        # Chave de acesso: 44 dígitos
-        chave_acesso = ''.join([str(random.randint(0, 9)) for _ in range(44)])
-        numero_nf = f"{random.randint(1, 999999):06d}"
-        data_emissao = data_pedido + timedelta(hours=random.randint(1, 48))
-
-        nf_valor_total = 0.0
-        num_itens = random.randint(2, 8)
-
-        itens_desta_nf = []
-
-        for _ in range(num_itens):
-            prod = random.choice(produtos_data)
-            # prod: (id_produto, descricao, ncm, categoria, peso_medio_kg, valor_medio)
-            quantidade = random.randint(1, 50)
-            valor_unitario = round(prod[5] * random.uniform(0.8, 1.2), 2)
-            valor_total_item = round(quantidade * valor_unitario, 2)
-            peso_item = round(prod[4] * quantidade, 2)
-
-            comprimento_cm = round(random.uniform(20, 120), 1)
-            largura_cm = round(random.uniform(15, 80), 1)
-            altura_cm = round(random.uniform(10, 60), 1)
-
-            itens_desta_nf.append((
-                id_item_counter, id_nf_counter, prod[0], prod[1], prod[2],
-                quantidade, "UN", valor_unitario, valor_total_item,
-                peso_item, comprimento_cm, largura_cm, altura_cm
-            ))
-            nf_valor_total += valor_total_item
-            id_item_counter += 1
-
-        notas_data.append((
-            id_nf_counter, numero_nf, id_pedido, data_emissao,
-            round(nf_valor_total, 2), chave_acesso
-        ))
-        itens_data.extend(itens_desta_nf)
-        id_nf_counter += 1
-
-print(f"Gerados {len(notas_data)} notas fiscais e {len(itens_data)} itens.")
+# MAGIC ### 6b. Salvar tabela notas_fiscais
 
 # COMMAND ----------
 
