@@ -112,26 +112,30 @@ df_base = df_pedidos.withColumn(
 )
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 1: Criar o DataFrame de features agregadas           ║
-# ║  Dica: Agrupe por ano, semana, mes, rota usando groupBy()   ║
-# ║  e calcule: count => total_pedidos, avg(peso_total_kg),     ║
-# ║  avg(valor_frete), avg(dia_da_semana)                       ║
-# ║  Depois use Window + F.lag() para criar                     ║
-# ║  total_pedidos_semana_anterior                               ║
+# ║  TO-DO 1: Descomente o bloco abaixo para criar as features  ║
+# ║           agregadas por semana/rota com lag da semana anterior║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu codigo aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — agrega pedidos por semana/rota e cria lag feature ▼▼▼
 
-# Passo 1: Agregar por semana e rota
-# df_features = df_base.groupBy( ... ).agg( ... )
-
-# Passo 2: Criar lag feature com Window
+# # Passo 1: Agregar por semana e rota
+# df_features = df_base.groupBy(
+#     "ano", "semana", "mes", "rota"
+# ).agg(
+#     F.count("id_pedido").alias("total_pedidos"),
+#     F.avg("peso_total_kg").alias("peso_medio"),
+#     F.avg("valor_frete").alias("valor_medio"),
+#     F.avg("dia_da_semana").alias("dia_da_semana_medio"),
+# )
+#
+# # Passo 2: Lag feature — volume da semana anterior por rota
 # window_rota = Window.partitionBy("rota").orderBy("ano", "semana")
 # df_features = df_features.withColumn(
 #     "total_pedidos_semana_anterior",
 #     F.lag("total_pedidos", 1).over(window_rota)
 # )
-
-pass
+#
+# print(f"Features criadas: {df_features.count()} registros")
+# display(df_features.limit(10))
 
 # ▲▲▲ Fim do TO-DO 1 ▲▲▲
 
@@ -158,37 +162,38 @@ feature_cols = ["semana", "mes", "dia_da_semana_medio", "peso_medio", "valor_med
 target_col = "total_pedidos"
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 2: Treinar o modelo com MLflow tracking               ║
-# ║  Dica: Use mlflow.sklearn.autolog() para log automatico.     ║
-# ║  Crie um run com mlflow.start_run(run_name="demanda")        ║
-# ║  Treine RandomForestRegressor(n_estimators=100, random_state=42) ║
-# ║  Avalie com MAE, RMSE e R2                                   ║
+# ║  TO-DO 2: Descomente o bloco abaixo para treinar o modelo   ║
+# ║           RandomForest com tracking automatico via MLflow     ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu codigo aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — converte para Pandas, treina e avalia com MLflow ▼▼▼
 
-# Passo 1: Separar treino e teste
+# # Preparar dados (requer TO-DO 1 completo)
+# df_features_clean = df_features.filter(F.col("total_pedidos_semana_anterior").isNotNull())
+# pdf = df_features_clean.toPandas()
+#
+# # Passo 1: Separar treino e teste (80/20)
 # X = pdf[feature_cols]
 # y = pdf[target_col]
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Passo 2: Configurar MLflow
-# mlflow.sklearn.autolog()
-
-# Passo 3: Treinar dentro de um run do MLflow
-# with mlflow.start_run(run_name="demanda_logistica"):
-#     model = RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42)
-#     model.fit(X_train, y_train)
 #
+# # Passo 2: Habilitar autolog do MLflow para sklearn
+# mlflow.sklearn.autolog()
+#
+# # Passo 3: Treinar dentro de um run do MLflow
+# with mlflow.start_run(run_name="demanda_logistica") as run:
+#     model = RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1)
+#     model.fit(X_train, y_train)
 #     y_pred = model.predict(X_test)
 #     mae = mean_absolute_error(y_test, y_pred)
 #     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 #     r2 = r2_score(y_test, y_pred)
-#
-#     print(f"MAE: {mae:.2f}")
-#     print(f"RMSE: {rmse:.2f}")
-#     print(f"R2: {r2:.4f}")
-
-pass
+#     mlflow.log_metric("custom_mae", mae)
+#     mlflow.log_metric("custom_rmse", rmse)
+#     mlflow.log_metric("custom_r2", r2)
+#     print(f"MAE:  {mae:.2f} pedidos")
+#     print(f"RMSE: {rmse:.2f} pedidos")
+#     print(f"R2:   {r2:.4f}")
+#     print(f"\nRun ID: {run.info.run_id}")
 
 # ▲▲▲ Fim do TO-DO 2 ▲▲▲
 
@@ -331,27 +336,30 @@ print(f"Pedidos pendentes com localizacao: {df_pedidos_pendentes.count()}")
 from math import radians, cos, sin, asin, sqrt
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 3: Implementar a UDF de distancia Haversine           ║
-# ║  Dica: Use a formula acima. Recebe (lat1, lon1, lat2, lon2)  ║
-# ║  Retorna a distancia em km. Registre como UDF do Spark       ║
-# ║  com spark.udf.register("haversine", func, DoubleType())     ║
+# ║  TO-DO 3: Descomente o bloco abaixo para criar a UDF         ║
+# ║           Haversine que calcula distancia em km entre          ║
+# ║           dois pontos (lat/lon) na superficie da Terra         ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu codigo aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — funcao Haversine + registro como UDF do Spark ▼▼▼
 
 # def haversine(lat1, lon1, lat2, lon2):
-#     """Calcula a distancia em km entre dois pontos usando Haversine."""
+#     """Calcula a distancia em km entre dois pontos na Terra usando Haversine."""
 #     if any(v is None for v in [lat1, lon1, lat2, lon2]):
 #         return None
-#     # Converter para radianos
-#     # Aplicar formula de Haversine
-#     # Retornar distancia em km
-#     ...
-
-# Registrar como UDF
+#     lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+#     dlat = lat2 - lat1
+#     dlon = lon2 - lon1
+#     a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+#     c = 2 * asin(sqrt(a))
+#     r = 6371  # raio da Terra em km
+#     return r * c
+#
+# # Registrar como UDF do Spark para usar em DataFrames e SQL
 # haversine_udf = F.udf(haversine, DoubleType())
 # spark.udf.register("haversine", haversine, DoubleType())
-
-pass
+# print("UDF haversine registrada!")
+# # Teste: SP -> RJ (~360km)
+# print(f"Teste SP -> RJ: {haversine(-23.5505, -46.6333, -22.9068, -43.1729):.1f} km")
 
 # ▲▲▲ Fim do TO-DO 3 ▲▲▲
 
@@ -458,38 +466,53 @@ for k, v in pedido_surpresa.items():
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 4: Encontrar os 5 caminhoes mais proximos             ║
-# ║  Dica:                                                        ║
-# ║  1. Filtre raw.caminhoes por capacidade >= peso do pedido     ║
-# ║  2. Join com raw.motoristas (status = 'Ativo')               ║
-# ║  3. Join com ultimo status de cada carga (posicao atual)      ║
-# ║  4. Calcule distancia com haversine_udf                       ║
-# ║  5. Ordene por distancia e pegue LIMIT 5                      ║
+# ║  TO-DO 4: Descomente o bloco abaixo para encontrar os 5      ║
+# ║           caminhoes mais proximos do pedido surpresa            ║
+# ║  (requer TO-DO 3 — UDF haversine)                             ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu codigo aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — filtra caminhoes, join motoristas, calcula distancia ▼▼▼
 
 # peso_pedido_ton = pedido_surpresa["peso_kg"] / 1000
 # lat_pedido = pedido_surpresa["latitude"]
 # lon_pedido = pedido_surpresa["longitude"]
-
-# Passo 1: Caminhoes com capacidade suficiente
+#
+# # Passo 1: Caminhoes com capacidade suficiente
 # df_cam_disponiveis = spark.table("raw.caminhoes").filter(
 #     F.col("capacidade_toneladas") >= peso_pedido_ton
 # )
-
-# Passo 2: Motoristas ativos
+#
+# # Passo 2: Motoristas ativos
 # df_motoristas = spark.table("raw.motoristas").filter(F.col("status") == "Ativo")
-
-# Passo 3: Join caminhoes + motoristas
-# ...
-
-# Passo 4: Ultima posicao (lat/long) de cada caminhao
-# ...
-
-# Passo 5: Calcular distancia e ordenar
-# ...
-
-pass
+#
+# # Passo 3: Join caminhoes + motoristas
+# df_cam_motorista = df_cam_disponiveis.alias("cam").join(
+#     df_motoristas.alias("mot"),
+#     F.col("cam.id_caminhao") == F.col("mot.id_caminhao"), "inner"
+# ).select(
+#     F.col("cam.id_caminhao"), F.col("cam.placa"),
+#     F.col("cam.capacidade_toneladas"), F.col("cam.tipo"),
+#     F.col("mot.nome").alias("motorista"), F.col("mot.celular"),
+# )
+#
+# # Passo 4: Ultima posicao de cada caminhao
+# df_posicao = df_status.alias("st").join(
+#     df_cargas.alias("cg"), F.col("st.id_carga") == F.col("cg.id_carga"), "inner"
+# ).select(F.col("cg.id_caminhao"), F.col("st.latitude"), F.col("st.longitude"), F.col("st.timestamp"))
+# window_pos = Window.partitionBy("id_caminhao").orderBy(F.col("timestamp").desc())
+# df_ultima_posicao = df_posicao.withColumn("rn", F.row_number().over(window_pos)).filter(F.col("rn") == 1).drop("rn")
+#
+# # Passo 5: Calcular distancia e retornar top 5
+# df_resultado = df_cam_motorista.alias("cm").join(
+#     df_ultima_posicao.alias("pos"), F.col("cm.id_caminhao") == F.col("pos.id_caminhao"), "inner"
+# ).withColumn(
+#     "distancia_km", haversine_udf(F.col("pos.latitude"), F.col("pos.longitude"), F.lit(lat_pedido), F.lit(lon_pedido))
+# ).select(
+#     "cm.id_caminhao", "cm.placa", "cm.tipo", "cm.capacidade_toneladas",
+#     "cm.motorista", "cm.celular", "distancia_km",
+# ).orderBy("distancia_km").limit(5)
+#
+# print("\nTop 5 caminhoes mais proximos:")
+# display(df_resultado)
 
 # ▲▲▲ Fim do TO-DO 4 ▲▲▲
 
@@ -505,33 +528,30 @@ pass
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 5: Registrar o melhor modelo no Unity Catalog          ║
-# ║  Dica:                                                        ║
-# ║  1. Use mlflow.search_runs() para encontrar o melhor run      ║
-# ║  2. Registre com mlflow.register_model(                       ║
-# ║     f"runs:/{run_id}/model",                                  ║
-# ║     f"{catalog_name}.ml.modelo_demanda"                       ║
-# ║  )                                                            ║
+# ║  TO-DO 5: Descomente o bloco abaixo para registrar o melhor  ║
+# ║           modelo no Unity Catalog (requer TO-DO 2 completo)   ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu codigo aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — busca melhor run e registra modelo no UC ▼▼▼
 
-# Passo 1: Buscar o melhor run (menor RMSE)
 # mlflow.set_registry_uri("databricks-uc")
-# experiment_name = "/Users/<seu_email>/demanda_logistica"
+#
+# # Passo 1: Buscar o melhor run (menor RMSE)
 # runs = mlflow.search_runs(
-#     experiment_names=[experiment_name],
 #     order_by=["metrics.training_root_mean_squared_error ASC"],
-#     max_results=1
+#     max_results=1,
 # )
-# best_run_id = runs.iloc[0]["run_id"]
-# print(f"Melhor run: {best_run_id}")
-
-# Passo 2: Registrar no Unity Catalog
-# model_name = f"{catalog_name}.ml.modelo_demanda"
-# mlflow.register_model(f"runs:/{best_run_id}/model", model_name)
-# print(f"Modelo registrado como: {model_name}")
-
-pass
+#
+# if len(runs) > 0:
+#     best_run_id = runs.iloc[0]["run_id"]
+#     best_rmse = runs.iloc[0].get("metrics.training_root_mean_squared_error", "N/A")
+#     print(f"Melhor run: {best_run_id} (RMSE: {best_rmse})")
+#
+#     # Passo 2: Registrar no Unity Catalog
+#     model_name = f"{catalog_name}.ml.modelo_demanda"
+#     result = mlflow.register_model(f"runs:/{best_run_id}/model", model_name)
+#     print(f"Modelo registrado: {model_name} (versao {result.version})")
+# else:
+#     print("Nenhum run encontrado. Execute o TO-DO 2 primeiro.")
 
 # ▲▲▲ Fim do TO-DO 5 ▲▲▲
 
