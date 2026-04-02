@@ -318,7 +318,7 @@ def silver_itens_nf():
 
     # ▼▼▼ Seu codigo aqui ▼▼▼
 
-    pass  # Substitua pelo codigo de explode
+    return pedidos  # Substitua pelo codigo de explode
 
     # ▲▲▲ Fim do TO-DO 3 ▲▲▲
 
@@ -408,7 +408,7 @@ def gold_volume_por_rota():
     # ╚══════════════════════════════════════════════════════════════╝
     # ▼▼▼ Seu codigo aqui ▼▼▼
 
-    pass  # Substitua pela agregacao
+    return pedidos  # Substitua pela agregacao
 
     # ▲▲▲ Fim do TO-DO 5 ▲▲▲
 
@@ -477,6 +477,6 @@ def gold_status_entregas():
     # ╚══════════════════════════════════════════════════════════════╝
     # ▼▼▼ Seu codigo aqui ▼▼▼
 
-    pass  # Substitua pela agregacao com window function
+    return status  # Substitua pela agregacao com window function
 
     # ▲▲▲ Fim do TO-DO 6 ▲▲▲
