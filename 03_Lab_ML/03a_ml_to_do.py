@@ -38,6 +38,10 @@ print(f"✅ Usando catálogo: {catalog_name}")
 
 # COMMAND ----------
 
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
 # Imports necessarios
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
