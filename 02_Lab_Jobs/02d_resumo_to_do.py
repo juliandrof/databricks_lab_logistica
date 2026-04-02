@@ -73,10 +73,14 @@ resumo = []
 #                 contagem = spark.sql(
 #                     f"SELECT COUNT(*) AS total FROM {catalog_name}.{schema}.{tabela}"
 #                 ).collect()[0]["total"]
-#                 detail = spark.sql(
-#                     f"DESCRIBE DETAIL {catalog_name}.{schema}.{tabela}"
-#                 ).collect()[0]
-#                 last_modified = str(detail["lastModified"]) if "lastModified" in detail.asDict() else "N/A"
+#                 # DESCRIBE DETAIL nao funciona em views — tratar com try/except
+#                 try:
+#                     detail = spark.sql(
+#                         f"DESCRIBE DETAIL {catalog_name}.{schema}.{tabela}"
+#                     ).collect()[0]
+#                     last_modified = str(detail["lastModified"]) if "lastModified" in detail.asDict() else "N/A"
+#                 except Exception:
+#                     last_modified = "N/A (view)"
 #                 resumo.append({
 #                     "table_name": full_name,
 #                     "row_count": int(contagem),
