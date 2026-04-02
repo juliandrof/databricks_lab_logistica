@@ -213,13 +213,14 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 > 💡 **Dica**: Em caso de dúvida, consulte o arquivo `01c_sdp_pipeline_completo.py` como referência.
 
 **Para configurar o pipeline SDP:**
-1. Vá em **Workflows** → **Spark Declarative Pipelines** → **Create Pipeline**
-2. Nome: `pipeline_logistica_{seu_nome}`
-3. Source code: `01_Lab_SDP/01b_sdp_pipeline_to_do.py`
-4. Target catalog: `workshop_logistica_{seu_nome}`
-5. **Não defina um target schema único** — cada tabela já usa fully qualified name (`catalog.schema.tabela`), permitindo escrita em múltiplos schemas (bronze, silver, gold)
-6. Em **Configuration**, adicione: `pipeline.nome_participante` = `{seu_nome}`
-7. Compute: **Serverless** (recomendado)
+1. Vá em **Jobs & Pipelines** → **ETL pipeline**
+2. **Pipeline name**: `pipeline_logistica_{seu_nome}`
+3. **Source code**: selecione o notebook `01_Lab_SDP/01b_sdp_pipeline_to_do.py`
+4. **Target catalog**: `workshop_logistica_{seu_nome}`
+5. **Target schema**: `default` (obrigatório na UI)
+6. Em **Configuration**, adicione: Key: `pipeline.nome_participante` → Value: `{seu_nome}`
+7. **Compute**: Serverless (recomendado) ou cluster existente
+8. Clique em **Create** e depois **Start** para executar
 
 ---
 
