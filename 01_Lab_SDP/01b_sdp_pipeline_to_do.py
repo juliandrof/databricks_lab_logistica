@@ -290,14 +290,6 @@ def silver_pedidos():
 
 # COMMAND ----------
 
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 3: Completar o segundo explode para extrair os itens  ║
-# ║  O primeiro explode (notas_fiscais → nf) ja esta feito.      ║
-# ║  Falta explodir nf.itens e extrair os campos do item.        ║
-# ║  Dica: Use F.explode("nf.itens").alias("item") e depois      ║
-# ║        selecione os campos com F.col("item.descricao"), etc.  ║
-# ╚══════════════════════════════════════════════════════════════╝
-
 @dlt.table(
     name=f"{catalog_name}.silver.silver_itens_nf",
     comment="Itens de nota fiscal explodidos a partir dos pedidos",
@@ -307,8 +299,7 @@ def silver_pedidos():
 def silver_itens_nf():
     pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
 
-    # Passo 1 (pronto): Explodir notas_fiscais em linhas individuais
-    nfs = (
+    return (
         pedidos
         .select(
             "id_pedido", "id_cliente", "data_pedido",
@@ -322,17 +313,25 @@ def silver_itens_nf():
             F.col("nf.numero_nf").alias("numero_nf"),
             F.col("nf.data_emissao").alias("data_emissao_nf"),
             F.col("nf.valor_total").alias("valor_total_nf"),
-            F.col("nf.itens").alias("itens"),
+            F.explode("nf.itens").alias("item"),
+        )
+        .select(
+            "id_pedido", "id_cliente", "data_pedido",
+            "cidade_origem", "uf_origem", "cidade_destino", "uf_destino",
+            "id_nf", "numero_nf", "data_emissao_nf", "valor_total_nf",
+            F.col("item.id_item").alias("id_item"),
+            F.col("item.descricao").alias("descricao"),
+            F.col("item.ncm").alias("ncm"),
+            F.col("item.quantidade").alias("quantidade"),
+            F.col("item.unidade").alias("unidade"),
+            F.col("item.valor_unitario").alias("valor_unitario"),
+            F.col("item.valor_total").alias("valor_total_item"),
+            F.col("item.peso_kg").alias("peso_kg"),
+            F.col("item.dimensoes.comprimento_cm").alias("comprimento_cm"),
+            F.col("item.dimensoes.largura_cm").alias("largura_cm"),
+            F.col("item.dimensoes.altura_cm").alias("altura_cm"),
         )
     )
-
-    # Passo 2 (TO-DO): Explodir itens e extrair campos
-    # ▼▼▼ Seu codigo aqui — substitua o return abaixo ▼▼▼
-    # Dica: nfs.select(..., F.explode("itens").alias("item"))
-    #       .select(..., F.col("item.descricao").alias("descricao"),
-    #                    F.col("item.quantidade").alias("quantidade"), ...)
-    return nfs  # Substitua: explodir "itens" e extrair campos do item
-    # ▲▲▲ Fim do TO-DO 3 ▲▲▲
 
 # COMMAND ----------
 
@@ -342,7 +341,7 @@ def silver_itens_nf():
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 4: Adicionar expectation para dropar registros         ║
+# ║  TO-DO 3: Adicionar expectation para dropar registros         ║
 # ║           onde id_carga IS NULL                                ║
 # ║  Dica: Use @dlt.expect_or_drop("carga_valida",                ║
 # ║        "id_carga IS NOT NULL") como decorator antes da funcao  ║
@@ -355,7 +354,7 @@ def silver_itens_nf():
 )
 # ▼▼▼ Seu codigo aqui - adicione o decorator de expectation ▼▼▼
 
-# ▲▲▲ Fim do TO-DO 4 ▲▲▲
+# ▲▲▲ Fim do TO-DO 3 ▲▲▲
 def silver_status_transporte():
     status = dlt.read_stream(f"{catalog_name}.bronze.bronze_status")
     status_ref = spark.read.table(f"{catalog_name}.raw.status_transporte_ref")
@@ -404,7 +403,7 @@ def gold_volume_por_rota():
     pedidos = dlt.read(f"{catalog_name}.silver.silver_pedidos")
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 5: Completar as 2 funcoes de agregacao faltando       ║
+    # ║  TO-DO 4: Completar as 2 funcoes de agregacao faltando       ║
     # ║  O groupBy e as 2 primeiras metricas ja estao prontos.       ║
     # ║  Adicione: F.sum("valor_frete") e F.avg("valor_frete")      ║
     # ╚══════════════════════════════════════════════════════════════╝
@@ -421,7 +420,7 @@ def gold_volume_por_rota():
             # ▼▼▼ Seu codigo aqui — adicione as 2 metricas faltando ▼▼▼
             # F.sum("valor_frete").alias("valor_frete_total"),
             # F.avg("valor_frete").alias("frete_medio"),
-            # ▲▲▲ Fim do TO-DO 5 ▲▲▲
+            # ▲▲▲ Fim do TO-DO 4 ▲▲▲
         )
     )
 
@@ -471,7 +470,7 @@ def gold_status_entregas():
     status = dlt.read(f"{catalog_name}.silver.silver_status_transporte")
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 6: Completar o groupBy final sobre ultimo_status      ║
+    # ║  TO-DO 5: Completar o groupBy final sobre ultimo_status      ║
     # ║  A window function e o filtro ja estao prontos.              ║
     # ║  Faca um groupBy("descricao_status", "id_status", "ordem")  ║
     # ║  com F.count("id_carga").alias("total_cargas")               ║
@@ -492,4 +491,4 @@ def gold_status_entregas():
     #       .agg(F.count("id_carga").alias("total_cargas"))
     #       .orderBy("ordem")
     return ultimo_status  # Substitua pelo groupBy + agg
-    # ▲▲▲ Fim do TO-DO 6 ▲▲▲
+    # ▲▲▲ Fim do TO-DO 5 ▲▲▲

@@ -198,17 +198,16 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 
 **O que você vai fazer:**
 1. **Iniciar o gerador de streaming** (`01a_gerador_streaming.py`) — gera JSONs de pedidos, NFs e status a cada 5 minutos
-2. **Completar os TO-DOs** (`01b_sdp_pipeline_to_do.py`) — 6 exercícios
+2. **Completar os TO-DOs** (`01b_sdp_pipeline_to_do.py`) — 5 exercícios
 3. **Configurar e executar o pipeline** via UI do Spark Declarative Pipelines
 
 | TO-DO | Descrição | O que fazer |
 |-------|-----------|-------------|
 | 1 | Ler tabela `movimento_cargas` do raw | Preencher o `return` com `spark.read.table(...)` |
 | 2 | Extrair ano, mês e dia do pedido | Adicionar 3 `.withColumn()` |
-| 3 | Explodir itens da NF (2º nível) | Completar o segundo `explode` (o 1º já está pronto) |
-| 4 | Adicionar expectativa de qualidade | Adicionar 1 decorator `@dlt.expect_or_drop(...)` |
-| 5 | Completar agregação por rota | Adicionar 2 métricas faltando no `.agg()` |
-| 6 | Agregar status mais recente | Completar o `groupBy` final (window já está pronta) |
+| 3 | Adicionar expectativa de qualidade | Adicionar 1 decorator `@dlt.expect_or_drop(...)` |
+| 4 | Completar agregação por rota | Adicionar 2 métricas faltando no `.agg()` |
+| 5 | Agregar status mais recente | Completar o `groupBy` final (window já está pronta) |
 
 > 💡 **Dica**: Em caso de dúvida, consulte o arquivo `01c_sdp_pipeline_completo.py` como referência.
 
