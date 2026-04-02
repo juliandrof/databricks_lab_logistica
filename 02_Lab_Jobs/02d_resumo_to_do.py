@@ -57,14 +57,41 @@ schemas = ["raw", "silver", "gold"]
 resumo = []
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 6: Criar DataFrame de resumo com table_name,           ║
-# ║  row_count e last_updated para todas as tabelas                ║
-# ║  Dica: Use SHOW TABLES para listar, SELECT COUNT(*)            ║
-# ║  para contagem, e DESCRIBE DETAIL para timestamps              ║
+# ║  TO-DO 6: Descomente o bloco abaixo para gerar um resumo     ║
+# ║           de todas as tabelas com contagem e timestamp         ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu código aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — loop por schema, lista tabelas, conta registros ▼▼▼
 
-pass
+# for schema in schemas:
+#     print(f"\n📂 Processando schema: {schema}")
+#     try:
+#         tabelas_df = spark.sql(f"SHOW TABLES IN {catalog_name}.{schema}")
+#         tabelas = [row["tableName"] for row in tabelas_df.collect()]
+#         for tabela in tabelas:
+#             full_name = f"{schema}.{tabela}"
+#             try:
+#                 contagem = spark.sql(
+#                     f"SELECT COUNT(*) AS total FROM {catalog_name}.{schema}.{tabela}"
+#                 ).collect()[0]["total"]
+#                 detail = spark.sql(
+#                     f"DESCRIBE DETAIL {catalog_name}.{schema}.{tabela}"
+#                 ).collect()[0]
+#                 last_modified = str(detail["lastModified"]) if "lastModified" in detail.asDict() else "N/A"
+#                 resumo.append({
+#                     "table_name": full_name,
+#                     "row_count": int(contagem),
+#                     "last_updated": last_modified,
+#                 })
+#                 print(f"  ✅ {full_name}: {contagem:,} registros")
+#             except Exception as e:
+#                 resumo.append({
+#                     "table_name": full_name,
+#                     "row_count": -1,
+#                     "last_updated": f"ERRO: {str(e)[:100]}",
+#                 })
+#                 print(f"  ⚠️ {full_name}: Erro - {e}")
+#     except Exception as e:
+#         print(f"  ⚠️ Erro ao listar tabelas do schema {schema}: {e}")
 
 # ▲▲▲ Fim do TO-DO 6 ▲▲▲
 

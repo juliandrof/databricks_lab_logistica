@@ -81,13 +81,33 @@ except Exception as e:
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 4: Verificar que valor_frete > 0 em silver_pedidos     ║
-# ║  Dica: SELECT COUNT(*) FROM silver.silver_pedidos              ║
-# ║        WHERE valor_frete <= 0                                  ║
+# ║  TO-DO 4: Descomente o bloco abaixo para verificar que        ║
+# ║           nenhum pedido tem valor_frete <= 0                    ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu código aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — conta registros com frete invalido ▼▼▼
 
-pass
+# try:
+#     frete_invalido = spark.sql(f"""
+#         SELECT COUNT(*) AS total
+#         FROM {catalog_name}.silver.silver_pedidos
+#         WHERE valor_frete <= 0
+#     """).collect()[0]["total"]
+#     status = "OK" if frete_invalido == 0 else "FALHA"
+#     resultados_qualidade.append({
+#         "check": "valor_frete <= 0 (silver_pedidos)",
+#         "resultado": int(frete_invalido),
+#         "esperado": "0 registros com frete <= 0",
+#         "status": status,
+#     })
+#     print(f"{'✅' if status == 'OK' else '❌'} Registros com valor_frete <= 0: {frete_invalido}")
+# except Exception as e:
+#     resultados_qualidade.append({
+#         "check": "valor_frete <= 0 (silver_pedidos)",
+#         "resultado": str(e),
+#         "esperado": "0 registros com frete <= 0",
+#         "status": "ERRO",
+#     })
+#     print(f"⚠️ Erro ao verificar valor_frete: {e}")
 
 # ▲▲▲ Fim do TO-DO 4 ▲▲▲
 
@@ -106,13 +126,70 @@ pass
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 5: Verificar dados em gold_volume_por_rota              ║
-# ║  Dica: Verifique contagem total > 0, e que nao ha              ║
-# ║        total_pedidos ou peso_total negativos                   ║
+# ║  TO-DO 5: Descomente o bloco abaixo para verificar que        ║
+# ║           gold_volume_por_rota tem dados e sem valores negativos║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu código aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — 3 checks na tabela gold ▼▼▼
 
-pass
+# # Check 5a: tabela tem dados
+# try:
+#     total_rotas = spark.sql(f"""
+#         SELECT COUNT(*) AS total FROM {catalog_name}.gold.gold_volume_por_rota
+#     """).collect()[0]["total"]
+#     status = "OK" if total_rotas > 0 else "FALHA"
+#     resultados_qualidade.append({
+#         "check": "gold_volume_por_rota tem dados",
+#         "resultado": int(total_rotas),
+#         "esperado": "> 0 registros",
+#         "status": status,
+#     })
+#     print(f"{'✅' if status == 'OK' else '❌'} Registros em gold_volume_por_rota: {total_rotas}")
+# except Exception as e:
+#     resultados_qualidade.append({
+#         "check": "gold_volume_por_rota tem dados",
+#         "resultado": str(e), "esperado": "> 0 registros", "status": "ERRO",
+#     })
+#     print(f"⚠️ Erro: {e}")
+#
+# # Check 5b: sem total_pedidos negativo
+# try:
+#     pedidos_negativos = spark.sql(f"""
+#         SELECT COUNT(*) AS total FROM {catalog_name}.gold.gold_volume_por_rota
+#         WHERE total_pedidos < 0
+#     """).collect()[0]["total"]
+#     status = "OK" if pedidos_negativos == 0 else "FALHA"
+#     resultados_qualidade.append({
+#         "check": "total_pedidos negativo (gold)",
+#         "resultado": int(pedidos_negativos),
+#         "esperado": "0 registros negativos",
+#         "status": status,
+#     })
+#     print(f"{'✅' if status == 'OK' else '❌'} total_pedidos negativo: {pedidos_negativos}")
+# except Exception as e:
+#     resultados_qualidade.append({
+#         "check": "total_pedidos negativo (gold)",
+#         "resultado": str(e), "esperado": "0 negativos", "status": "ERRO",
+#     })
+#
+# # Check 5c: sem peso_total negativo
+# try:
+#     peso_negativo = spark.sql(f"""
+#         SELECT COUNT(*) AS total FROM {catalog_name}.gold.gold_volume_por_rota
+#         WHERE peso_total < 0
+#     """).collect()[0]["total"]
+#     status = "OK" if peso_negativo == 0 else "FALHA"
+#     resultados_qualidade.append({
+#         "check": "peso_total negativo (gold)",
+#         "resultado": int(peso_negativo),
+#         "esperado": "0 registros negativos",
+#         "status": status,
+#     })
+#     print(f"{'✅' if status == 'OK' else '❌'} peso_total negativo: {peso_negativo}")
+# except Exception as e:
+#     resultados_qualidade.append({
+#         "check": "peso_total negativo (gold)",
+#         "resultado": str(e), "esperado": "0 negativos", "status": "ERRO",
+#     })
 
 # ▲▲▲ Fim do TO-DO 5 ▲▲▲
 

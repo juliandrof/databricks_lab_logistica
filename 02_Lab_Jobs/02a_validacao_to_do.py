@@ -58,13 +58,32 @@ tabelas_esperadas = {
 resultados_validacao = []
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 1: Validar existencia e contagem minima de registros   ║
-# ║  Dica: Use spark.sql(f"SELECT COUNT(*) FROM                   ║
-# ║        {catalog_name}.raw.{table}") para cada tabela           ║
+# ║  TO-DO 1: Descomente o bloco abaixo para validar existencia  ║
+# ║           e contagem minima de registros em cada tabela        ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu código aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — loop que valida cada tabela do schema raw ▼▼▼
 
-pass
+# for tabela, minimo in tabelas_esperadas.items():
+#     try:
+#         contagem = spark.sql(
+#             f"SELECT COUNT(*) AS total FROM {catalog_name}.raw.{tabela}"
+#         ).collect()[0]["total"]
+#         status = "OK" if contagem >= minimo else "FALHA"
+#         resultados_validacao.append({
+#             "tabela": tabela,
+#             "contagem": int(contagem),
+#             "minimo_esperado": minimo,
+#             "status": status,
+#         })
+#         print(f"{'✅' if status == 'OK' else '❌'} {tabela}: {contagem:,} registros (minimo: {minimo:,})")
+#     except Exception as e:
+#         resultados_validacao.append({
+#             "tabela": tabela,
+#             "contagem": 0,
+#             "minimo_esperado": minimo,
+#             "status": "FALHA",
+#         })
+#         print(f"❌ {tabela}: Erro - {e}")
 
 # ▲▲▲ Fim do TO-DO 1 ▲▲▲
 
@@ -92,13 +111,36 @@ else:
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 2: Validar integridade referencial entre motoristas     ║
-# ║  e caminhoes                                                    ║
-# ║  Dica: Use LEFT ANTI JOIN para encontrar registros orfaos      ║
+# ║  TO-DO 2: Descomente o bloco abaixo para validar              ║
+# ║           integridade referencial motoristas → caminhoes        ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu código aqui ▼▼▼
+# ▼▼▼ Descomente o bloco — LEFT ANTI JOIN para encontrar registros orfaos ▼▼▼
 
-pass
+# try:
+#     orfaos = spark.sql(f"""
+#         SELECT COUNT(*) AS total
+#         FROM {catalog_name}.raw.motoristas m
+#         LEFT ANTI JOIN {catalog_name}.raw.caminhoes c
+#         ON m.id_caminhao = c.id_caminhao
+#     """).collect()[0]["total"]
+#     if orfaos == 0:
+#         print(f"✅ Integridade referencial OK: nenhum registro orfao encontrado")
+#         resultados_validacao.append({
+#             "tabela": "motoristas -> caminhoes (ref. integrity)",
+#             "contagem": 0, "minimo_esperado": 0, "status": "OK",
+#         })
+#     else:
+#         print(f"❌ Integridade referencial: {orfaos} registros orfaos encontrados")
+#         resultados_validacao.append({
+#             "tabela": "motoristas -> caminhoes (ref. integrity)",
+#             "contagem": int(orfaos), "minimo_esperado": 0, "status": "FALHA",
+#         })
+# except Exception as e:
+#     print(f"⚠️ Erro ao validar integridade referencial: {e}")
+#     resultados_validacao.append({
+#         "tabela": "motoristas -> caminhoes (ref. integrity)",
+#         "contagem": -1, "minimo_esperado": 0, "status": "FALHA",
+#     })
 
 # ▲▲▲ Fim do TO-DO 2 ▲▲▲
 
