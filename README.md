@@ -203,11 +203,11 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 
 | TO-DO | Descrição | O que fazer |
 |-------|-----------|-------------|
-| 1 | Ler tabela `movimento_cargas` do raw | Preencher o `return` com `spark.read.table(...)` |
-| 2 | Extrair ano, mês e dia do pedido | Adicionar 3 `.withColumn()` |
-| 3 | Adicionar expectativa de qualidade | Adicionar 1 decorator `@dlt.expect_or_drop(...)` |
-| 4 | Completar agregação por rota | Adicionar 2 métricas faltando no `.agg()` |
-| 5 | Agregar status mais recente | Completar o `groupBy` final (window já está pronta) |
+| 1 | Ler tabela `movimento_cargas` do raw | Descomentar 1 linha de `return` |
+| 2 | Extrair ano, mês e dia do pedido | Descomentar 3 linhas de `.withColumn()` |
+| 3 | Adicionar regra de qualidade | Descomentar 1 decorator `@dlt.expect_or_drop(...)` |
+| 4 | Completar agregação por rota | Descomentar 2 métricas no `.agg()` |
+| 5 | Agregar status mais recente | Descomentar bloco de `groupBy` final |
 
 > 💡 **Dica**: Em caso de dúvida, consulte o arquivo `01c_sdp_pipeline_completo.py` como referência.
 

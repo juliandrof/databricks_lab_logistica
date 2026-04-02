@@ -198,10 +198,9 @@ def bronze_motoristas():
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 1: Completar o return para ler a tabela               ║
-# ║           movimento_cargas do schema raw                      ║
-# ║  Dica: Siga o mesmo padrao das tabelas acima.                 ║
-# ║        Use spark.read.table(f"{catalog_name}.raw.___")        ║
+# ║  TO-DO 1: Descomente a linha do return abaixo para ler       ║
+# ║           a tabela movimento_cargas do schema raw              ║
+# ║  (mesmo padrao das tabelas bronze acima)                       ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 @dlt.table(
@@ -210,9 +209,10 @@ def bronze_motoristas():
     table_properties={"quality": "bronze"},
 )
 def bronze_movimento_cargas():
-    # ▼▼▼ Seu codigo aqui — substitua None pela leitura da tabela ▼▼▼
-    return None  # spark.read.table(f"{catalog_name}.raw.???")
+    # ▼▼▼ Descomente a linha abaixo ▼▼▼
+    # return spark.read.table(f"{catalog_name}.raw.movimento_cargas")
     # ▲▲▲ Fim do TO-DO 1 ▲▲▲
+    return spark.createDataFrame([], "id_carga: long")  # placeholder — remova apos descomentar
 
 # COMMAND ----------
 
@@ -342,10 +342,9 @@ def silver_itens_nf():
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 3: Adicionar expectation para dropar registros         ║
+# ║  TO-DO 3: Descomente o decorator abaixo para adicionar       ║
+# ║           uma regra de qualidade que dropa registros           ║
 # ║           onde id_carga IS NULL                                ║
-# ║  Dica: Use @dlt.expect_or_drop("carga_valida",                ║
-# ║        "id_carga IS NOT NULL") como decorator antes da funcao  ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 @dlt.table(
@@ -353,8 +352,8 @@ def silver_itens_nf():
     comment="Status de transporte enriquecido com descricao do status",
     table_properties={"quality": "silver"},
 )
-# ▼▼▼ Seu codigo aqui - adicione o decorator de expectation ▼▼▼
-
+# ▼▼▼ Descomente a linha abaixo — Data Quality: dropa registros sem id_carga ▼▼▼
+# @dlt.expect_or_drop("carga_valida", "id_carga IS NOT NULL")
 # ▲▲▲ Fim do TO-DO 3 ▲▲▲
 def silver_status_transporte():
     status = dlt.read_stream(f"{catalog_name}.bronze.bronze_status")
@@ -404,9 +403,8 @@ def gold_volume_por_rota():
     pedidos = dlt.read(f"{catalog_name}.silver.silver_pedidos")
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 4: Completar as 2 funcoes de agregacao faltando       ║
-    # ║  O groupBy e as 2 primeiras metricas ja estao prontos.       ║
-    # ║  Adicione: F.sum("valor_frete") e F.avg("valor_frete")      ║
+    # ║  TO-DO 4: Descomente as 2 linhas abaixo para adicionar      ║
+    # ║           as metricas de valor do frete na agregacao          ║
     # ╚══════════════════════════════════════════════════════════════╝
 
     return (
@@ -418,7 +416,7 @@ def gold_volume_por_rota():
         .agg(
             F.count("id_pedido").alias("total_pedidos"),
             F.sum("peso_total_kg").alias("peso_total"),
-            # ▼▼▼ Seu codigo aqui — adicione as 2 metricas faltando ▼▼▼
+            # ▼▼▼ Descomente as 2 linhas — soma e media do valor do frete ▼▼▼
             # F.sum("valor_frete").alias("valor_frete_total"),
             # F.avg("valor_frete").alias("frete_medio"),
             # ▲▲▲ Fim do TO-DO 4 ▲▲▲
@@ -471,13 +469,13 @@ def gold_status_entregas():
     status = dlt.read(f"{catalog_name}.silver.silver_status_transporte")
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 5: Completar o groupBy final sobre ultimo_status      ║
-    # ║  A window function e o filtro ja estao prontos.              ║
-    # ║  Faca um groupBy("descricao_status", "id_status", "ordem")  ║
-    # ║  com F.count("id_carga").alias("total_cargas")               ║
+    # ║  TO-DO 5: Descomente o bloco de return abaixo para           ║
+    # ║           agregar o ultimo status por descricao               ║
+    # ║  (a window function que pega o status mais recente            ║
+    # ║   de cada carga ja esta pronta)                               ║
     # ╚══════════════════════════════════════════════════════════════╝
 
-    # Passo 1 (pronto): Window para pegar o status mais recente por carga
+    # Window para pegar o status mais recente por carga (pronto)
     w = Window.partitionBy("id_carga").orderBy(F.col("timestamp").desc())
     ultimo_status = (
         status
@@ -486,10 +484,16 @@ def gold_status_entregas():
         .drop("rn")
     )
 
-    # Passo 2 (TO-DO): Agregar por descricao_status
-    # ▼▼▼ Seu codigo aqui — substitua o return abaixo ▼▼▼
-    # Dica: ultimo_status.groupBy("descricao_status", "id_status", "ordem")
-    #       .agg(F.count("id_carga").alias("total_cargas"))
-    #       .orderBy("ordem")
-    return ultimo_status  # Substitua pelo groupBy + agg
+    # ▼▼▼ Descomente o bloco — agregacao final por descricao de status ▼▼▼
+    # return (
+    #     ultimo_status
+    #     .groupBy("descricao_status", "id_status", "ordem")
+    #     .agg(
+    #         F.count("id_carga").alias("total_cargas"),
+    #         F.min("timestamp").alias("primeira_atualizacao"),
+    #         F.max("timestamp").alias("ultima_atualizacao"),
+    #     )
+    #     .orderBy("ordem")
+    # )
     # ▲▲▲ Fim do TO-DO 5 ▲▲▲
+    return ultimo_status  # placeholder — remova apos descomentar o bloco acima
