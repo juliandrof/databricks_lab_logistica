@@ -215,7 +215,7 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 **Para configurar o pipeline SDP:**
 1. Vá em **Jobs & Pipelines** → **ETL pipeline**
 2. **Pipeline name**: `pipeline_logistica_{seu_nome}`
-3. **Source code**: selecione o notebook `01_Lab_SDP/01b_sdp_pipeline_to_do.py`
+3. **Add existing assets**: selecione o notebook `01_Lab_SDP/01b_sdp_pipeline_to_do.py`
 4. **Target catalog**: `workshop_logistica_{seu_nome}`
 5. **Target schema**: `default` (obrigatório na UI)
 6. Em **Configuration**, adicione: Key: `pipeline.nome_participante` → Value: `{seu_nome}`
