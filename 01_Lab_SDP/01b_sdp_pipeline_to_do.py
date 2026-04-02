@@ -268,16 +268,17 @@ def silver_pedidos():
     )
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 2: Adicionar colunas de data (ano, mes, dia)         ║
-    # ║  Dica: Use F.year(), F.month(), F.dayofmonth()              ║
-    # ║  Exemplo:                                                    ║
-    # ║    .withColumn("ano", F.year("data_pedido"))                 ║
-    # ║    .withColumn("mes", F.month("data_pedido"))                ║
-    # ║    .withColumn("dia", F.dayofmonth("data_pedido"))           ║
+    # ║  TO-DO 2: Descomente as 3 linhas abaixo para adicionar      ║
+    # ║           as colunas de data (ano, mes, dia)                 ║
     # ╚══════════════════════════════════════════════════════════════╝
-    # ▼▼▼ Seu codigo aqui ▼▼▼
+    # ▼▼▼ Descomente as 3 linhas abaixo ▼▼▼
 
-    resultado = pedidos_enriquecidos  # Substitua esta linha adicionando as colunas
+    resultado = (
+        pedidos_enriquecidos
+        # .withColumn("ano", F.year("data_pedido"))
+        # .withColumn("mes", F.month("data_pedido"))
+        # .withColumn("dia", F.dayofmonth("data_pedido"))
+    )
 
     # ▲▲▲ Fim do TO-DO 2 ▲▲▲
 
