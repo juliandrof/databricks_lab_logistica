@@ -33,6 +33,10 @@ print(f"✅ Usando catálogo: {catalog_name}")
 
 # COMMAND ----------
 
+# MAGIC %pip install mlflow scikit-learn matplotlib
+
+# COMMAND ----------
+
 # Imports necessarios
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
