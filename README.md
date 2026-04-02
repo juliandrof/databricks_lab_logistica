@@ -197,8 +197,8 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 **Conceito**: Construir um pipeline de dados completo usando a abordagem declarativa do Databricks, com ingestão streaming via Auto Loader e transformações em camadas.
 
 **O que você vai fazer:**
-1. **Configurar o pipeline** via UI do Databricks (veja instruções abaixo)
-2. **Iniciar o gerador de streaming** (`01a_gerador_streaming.py`) — gera JSONs de pedidos, NFs e status a cada 5 minutos
+1. **Iniciar o gerador de streaming** (`01a_gerador_streaming.py`) — gera JSONs de pedidos, NFs e status a cada 5 minutos
+2. **Configurar o pipeline** via UI do Databricks (veja instruções abaixo)
 3. **Completar os TO-DOs** (`01b_sdp_pipeline_to_do.py`) — 5 exercícios e executar o pipeline
 
 | TO-DO | Descrição | O que fazer |
