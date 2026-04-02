@@ -1,7 +1,7 @@
 # Databricks notebook source
 
 # MAGIC %md
-# MAGIC # Lab 2a - Validacao dos Dados (TO-DO)
+# MAGIC # Lab 2a - Validacao dos Dados
 # MAGIC
 # MAGIC Neste notebook, validaremos que todas as tabelas base existem e possuem dados suficientes
 # MAGIC antes de prosseguir com o pipeline de transformacao.
@@ -57,35 +57,29 @@ tabelas_esperadas = {
 
 resultados_validacao = []
 
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 1: Descomente o bloco abaixo para validar existencia  ║
-# ║           e contagem minima de registros em cada tabela        ║
-# ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Descomente o bloco — loop que valida cada tabela do schema raw ▼▼▼
+for tabela, minimo in tabelas_esperadas.items():
+    try:
+        contagem = spark.sql(
+            f"SELECT COUNT(*) AS total FROM {catalog_name}.raw.{tabela}"
+        ).collect()[0]["total"]
 
-# for tabela, minimo in tabelas_esperadas.items():
-#     try:
-#         contagem = spark.sql(
-#             f"SELECT COUNT(*) AS total FROM {catalog_name}.raw.{tabela}"
-#         ).collect()[0]["total"]
-#         status = "OK" if contagem >= minimo else "FALHA"
-#         resultados_validacao.append({
-#             "tabela": tabela,
-#             "contagem": int(contagem),
-#             "minimo_esperado": minimo,
-#             "status": status,
-#         })
-#         print(f"{'✅' if status == 'OK' else '❌'} {tabela}: {contagem:,} registros (minimo: {minimo:,})")
-#     except Exception as e:
-#         resultados_validacao.append({
-#             "tabela": tabela,
-#             "contagem": 0,
-#             "minimo_esperado": minimo,
-#             "status": "FALHA",
-#         })
-#         print(f"❌ {tabela}: Erro - {e}")
+        status = "OK" if contagem >= minimo else "FALHA"
+        resultados_validacao.append({
+            "tabela": tabela,
+            "contagem": int(contagem),
+            "minimo_esperado": minimo,
+            "status": status,
+        })
+        print(f"{'✅' if status == 'OK' else '❌'} {tabela}: {contagem:,} registros (minimo: {minimo:,})")
 
-# ▲▲▲ Fim do TO-DO 1 ▲▲▲
+    except Exception as e:
+        resultados_validacao.append({
+            "tabela": tabela,
+            "contagem": 0,
+            "minimo_esperado": minimo,
+            "status": "FALHA",
+        })
+        print(f"❌ {tabela}: Erro - {e}")
 
 # COMMAND ----------
 
@@ -98,7 +92,7 @@ if resultados_validacao:
     df_resultados = spark.createDataFrame(resultados_validacao)
     display(df_resultados)
 else:
-    print("⚠️ Nenhum resultado de validacao foi gerado. Complete o TO-DO 1!")
+    print("⚠️ Nenhum resultado de validacao foi gerado.")
 
 # COMMAND ----------
 
@@ -110,39 +104,39 @@ else:
 
 # COMMAND ----------
 
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 2: Descomente o bloco abaixo para validar              ║
-# ║           integridade referencial motoristas → caminhoes        ║
-# ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Descomente o bloco — LEFT ANTI JOIN para encontrar registros orfaos ▼▼▼
+try:
+    orfaos = spark.sql(f"""
+        SELECT COUNT(*) AS total
+        FROM {catalog_name}.raw.motoristas m
+        LEFT ANTI JOIN {catalog_name}.raw.caminhoes c
+        ON m.id_caminhao = c.id_caminhao
+    """).collect()[0]["total"]
 
-# try:
-#     orfaos = spark.sql(f"""
-#         SELECT COUNT(*) AS total
-#         FROM {catalog_name}.raw.motoristas m
-#         LEFT ANTI JOIN {catalog_name}.raw.caminhoes c
-#         ON m.id_caminhao = c.id_caminhao
-#     """).collect()[0]["total"]
-#     if orfaos == 0:
-#         print(f"✅ Integridade referencial OK: nenhum registro orfao encontrado")
-#         resultados_validacao.append({
-#             "tabela": "motoristas -> caminhoes (ref. integrity)",
-#             "contagem": 0, "minimo_esperado": 0, "status": "OK",
-#         })
-#     else:
-#         print(f"❌ Integridade referencial: {orfaos} registros orfaos encontrados")
-#         resultados_validacao.append({
-#             "tabela": "motoristas -> caminhoes (ref. integrity)",
-#             "contagem": int(orfaos), "minimo_esperado": 0, "status": "FALHA",
-#         })
-# except Exception as e:
-#     print(f"⚠️ Erro ao validar integridade referencial: {e}")
-#     resultados_validacao.append({
-#         "tabela": "motoristas -> caminhoes (ref. integrity)",
-#         "contagem": -1, "minimo_esperado": 0, "status": "FALHA",
-#     })
+    if orfaos == 0:
+        print(f"✅ Integridade referencial OK: nenhum registro orfao encontrado")
+        resultados_validacao.append({
+            "tabela": "motoristas -> caminhoes (ref. integrity)",
+            "contagem": 0,
+            "minimo_esperado": 0,
+            "status": "OK",
+        })
+    else:
+        print(f"❌ Integridade referencial: {orfaos} registros orfaos encontrados")
+        resultados_validacao.append({
+            "tabela": "motoristas -> caminhoes (ref. integrity)",
+            "contagem": int(orfaos),
+            "minimo_esperado": 0,
+            "status": "FALHA",
+        })
 
-# ▲▲▲ Fim do TO-DO 2 ▲▲▲
+except Exception as e:
+    print(f"⚠️ Erro ao validar integridade referencial: {e}")
+    resultados_validacao.append({
+        "tabela": "motoristas -> caminhoes (ref. integrity)",
+        "contagem": -1,
+        "minimo_esperado": 0,
+        "status": "FALHA",
+    })
 
 # COMMAND ----------
 

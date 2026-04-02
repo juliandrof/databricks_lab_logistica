@@ -1,7 +1,7 @@
 # Databricks notebook source
 
 # MAGIC %md
-# MAGIC # Lab 2b - Trigger do Pipeline SDP (TO-DO)
+# MAGIC # Lab 2b - Trigger do Pipeline SDP
 # MAGIC
 # MAGIC Neste notebook, dispararemos a execucao de um pipeline SDP (Spark Declarative Pipelines)
 # MAGIC via REST API do Databricks e monitoraremos seu status ate a conclusao.
@@ -98,52 +98,49 @@ else:
 
 # COMMAND ----------
 
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 3: Descomente o bloco abaixo para disparar o pipeline  ║
-# ║           via REST API e monitorar a execucao ate conclusao     ║
-# ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Descomente o bloco — POST para disparar + loop de polling do status ▼▼▼
+# Disparar o pipeline
+print(f"🚀 Disparando pipeline {pipeline_id}...")
 
-# # Disparar o pipeline
-# print(f"🚀 Disparando pipeline {pipeline_id}...")
-# trigger_response = requests.post(
-#     f"{databricks_url}/api/2.0/pipelines/{pipeline_id}/updates",
-#     headers=headers,
-#     json={"full_refresh": False},
-# )
-# trigger_response.raise_for_status()
-# update_id = trigger_response.json().get("update_id")
-# print(f"Update iniciado: {update_id}")
-#
-# # Monitorar execucao
-# status_final = None
-# estados_terminais = {"COMPLETED", "FAILED", "CANCELED"}
-# polling_interval = 30
-# max_wait = 3600
-# elapsed = 0
-#
-# while elapsed < max_wait:
-#     status_response = requests.get(
-#         f"{databricks_url}/api/2.0/pipelines/{pipeline_id}/updates/{update_id}",
-#         headers=headers,
-#     )
-#     status_response.raise_for_status()
-#     update_info = status_response.json().get("update", {})
-#     status_atual = update_info.get("state", "UNKNOWN")
-#     print(f"⏳ [{elapsed}s] Status: {status_atual}")
-#     if status_atual in estados_terminais:
-#         status_final = status_atual
-#         break
-#     time.sleep(polling_interval)
-#     elapsed += polling_interval
-#
-# if status_final is None:
-#     status_final = "TIMEOUT"
-#     print(f"⚠️ Timeout atingido ({max_wait}s)")
-#
-# print(f"\n📋 Status final: {status_final}")
+trigger_response = requests.post(
+    f"{databricks_url}/api/2.0/pipelines/{pipeline_id}/updates",
+    headers=headers,
+    json={"full_refresh": False},
+)
+trigger_response.raise_for_status()
 
-# ▲▲▲ Fim do TO-DO 3 ▲▲▲
+update_id = trigger_response.json().get("update_id")
+print(f"Update iniciado: {update_id}")
+
+# Monitorar execucao
+status_final = None
+estados_terminais = {"COMPLETED", "FAILED", "CANCELED"}
+polling_interval = 30  # segundos
+max_wait = 3600  # 1 hora
+elapsed = 0
+
+while elapsed < max_wait:
+    status_response = requests.get(
+        f"{databricks_url}/api/2.0/pipelines/{pipeline_id}/updates/{update_id}",
+        headers=headers,
+    )
+    status_response.raise_for_status()
+
+    update_info = status_response.json().get("update", {})
+    status_atual = update_info.get("state", "UNKNOWN")
+    print(f"⏳ [{elapsed}s] Status: {status_atual}")
+
+    if status_atual in estados_terminais:
+        status_final = status_atual
+        break
+
+    time.sleep(polling_interval)
+    elapsed += polling_interval
+
+if status_final is None:
+    status_final = "TIMEOUT"
+    print(f"⚠️ Timeout atingido ({max_wait}s)")
+
+print(f"\n📋 Status final: {status_final}")
 
 # COMMAND ----------
 
@@ -152,17 +149,11 @@ else:
 
 # COMMAND ----------
 
-# A variavel 'status_final' deve ser definida no TO-DO 3
-try:
-    if status_final == "COMPLETED":
-        msg = f"SUCESSO: Pipeline {pipeline_id} executado com sucesso"
-        print(f"✅ {msg}")
-        dbutils.notebook.exit(msg)
-    else:
-        msg = f"FALHA: Pipeline {pipeline_id} terminou com status: {status_final}"
-        print(f"❌ {msg}")
-        dbutils.notebook.exit(msg)
-except NameError:
-    msg = "FALHA: Variavel 'status_final' nao definida. Complete o TO-DO 3!"
-    print(f"⚠️ {msg}")
+if status_final == "COMPLETED":
+    msg = f"SUCESSO: Pipeline {pipeline_id} executado com sucesso"
+    print(f"✅ {msg}")
+    dbutils.notebook.exit(msg)
+else:
+    msg = f"FALHA: Pipeline {pipeline_id} terminou com status: {status_final}"
+    print(f"❌ {msg}")
     dbutils.notebook.exit(msg)

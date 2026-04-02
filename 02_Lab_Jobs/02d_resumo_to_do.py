@@ -1,7 +1,7 @@
 # Databricks notebook source
 
 # MAGIC %md
-# MAGIC # Lab 2d - Resumo da Execucao (TO-DO)
+# MAGIC # Lab 2d - Resumo da Execucao
 # MAGIC
 # MAGIC Neste notebook, geraremos um resumo completo de todas as tabelas
 # MAGIC nos schemas bronze (raw), silver e gold, incluindo contagens e timestamps.
@@ -56,48 +56,46 @@ schemas = ["raw", "silver", "gold"]
 
 resumo = []
 
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 6: Descomente o bloco abaixo para gerar um resumo     ║
-# ║           de todas as tabelas com contagem e timestamp         ║
-# ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Descomente o bloco — loop por schema, lista tabelas, conta registros ▼▼▼
+for schema in schemas:
+    print(f"\n📂 Processando schema: {schema}")
+    try:
+        tabelas_df = spark.sql(f"SHOW TABLES IN {catalog_name}.{schema}")
+        tabelas = [row["tableName"] for row in tabelas_df.collect()]
 
-# for schema in schemas:
-#     print(f"\n📂 Processando schema: {schema}")
-#     try:
-#         tabelas_df = spark.sql(f"SHOW TABLES IN {catalog_name}.{schema}")
-#         tabelas = [row["tableName"] for row in tabelas_df.collect()]
-#         for tabela in tabelas:
-#             full_name = f"{schema}.{tabela}"
-#             try:
-#                 contagem = spark.sql(
-#                     f"SELECT COUNT(*) AS total FROM {catalog_name}.{schema}.{tabela}"
-#                 ).collect()[0]["total"]
-#                 # DESCRIBE DETAIL nao funciona em views — tratar com try/except
-#                 try:
-#                     detail = spark.sql(
-#                         f"DESCRIBE DETAIL {catalog_name}.{schema}.{tabela}"
-#                     ).collect()[0]
-#                     last_modified = str(detail["lastModified"]) if "lastModified" in detail.asDict() else "N/A"
-#                 except Exception:
-#                     last_modified = "N/A (view)"
-#                 resumo.append({
-#                     "table_name": full_name,
-#                     "row_count": int(contagem),
-#                     "last_updated": last_modified,
-#                 })
-#                 print(f"  ✅ {full_name}: {contagem:,} registros")
-#             except Exception as e:
-#                 resumo.append({
-#                     "table_name": full_name,
-#                     "row_count": -1,
-#                     "last_updated": f"ERRO: {str(e)[:100]}",
-#                 })
-#                 print(f"  ⚠️ {full_name}: Erro - {e}")
-#     except Exception as e:
-#         print(f"  ⚠️ Erro ao listar tabelas do schema {schema}: {e}")
+        for tabela in tabelas:
+            full_name = f"{schema}.{tabela}"
+            try:
+                # Contagem de registros
+                contagem = spark.sql(
+                    f"SELECT COUNT(*) AS total FROM {catalog_name}.{schema}.{tabela}"
+                ).collect()[0]["total"]
 
-# ▲▲▲ Fim do TO-DO 6 ▲▲▲
+                # Ultima atualizacao via DESCRIBE DETAIL (nao funciona em views)
+                try:
+                    detail = spark.sql(
+                        f"DESCRIBE DETAIL {catalog_name}.{schema}.{tabela}"
+                    ).collect()[0]
+                    last_modified = str(detail["lastModified"]) if "lastModified" in detail.asDict() else "N/A"
+                except Exception:
+                    last_modified = "N/A (view)"
+
+                resumo.append({
+                    "table_name": full_name,
+                    "row_count": int(contagem),
+                    "last_updated": last_modified,
+                })
+                print(f"  ✅ {full_name}: {contagem:,} registros")
+
+            except Exception as e:
+                resumo.append({
+                    "table_name": full_name,
+                    "row_count": -1,
+                    "last_updated": f"ERRO: {str(e)[:100]}",
+                })
+                print(f"  ⚠️ {full_name}: Erro - {e}")
+
+    except Exception as e:
+        print(f"  ⚠️ Erro ao listar tabelas do schema {schema}: {e}")
 
 # COMMAND ----------
 
@@ -109,8 +107,6 @@ resumo = []
 if resumo:
     df_resumo = spark.createDataFrame(resumo)
     display(df_resumo.orderBy("table_name"))
-else:
-    print("⚠️ Nenhum dado de resumo foi gerado. Complete o TO-DO 6!")
 
 # COMMAND ----------
 
@@ -121,12 +117,10 @@ else:
 
 if resumo:
     total_tabelas = len(resumo)
-    total_registros = sum(r["row_count"] for r in resumo)
+    total_registros = sum(r["row_count"] for r in resumo if r["row_count"] > 0)
     print(f"📊 Total de tabelas: {total_tabelas}")
     print(f"📊 Total de registros: {total_registros:,}")
     print(f"📊 Timestamp do resumo: {datetime.now().isoformat()}")
-else:
-    print("⚠️ Complete o TO-DO 6 para ver as estatisticas.")
 
 # COMMAND ----------
 
@@ -140,10 +134,10 @@ if resumo:
         "timestamp": datetime.now().isoformat(),
         "catalog": catalog_name,
         "total_tabelas": len(resumo),
-        "total_registros": sum(r["row_count"] for r in resumo),
+        "total_registros": sum(r["row_count"] for r in resumo if r["row_count"] > 0),
         "tabelas": resumo,
     }, default=str)
     print(f"✅ Resumo gerado com sucesso!")
     dbutils.notebook.exit(resumo_json)
 else:
-    dbutils.notebook.exit("FALHA: Resumo nao foi gerado. Complete o TO-DO 6!")
+    dbutils.notebook.exit("FALHA: Nenhuma tabela encontrada nos schemas")

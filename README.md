@@ -138,14 +138,10 @@ databricks_lab_logistica/
 │   └── 01c_sdp_pipeline_completo.py   # Pipeline SDP completo (referência)
 │
 ├── 02_Lab_Jobs/
-│   ├── 02a_validacao_to_do.py         # Task 1: Validação de dados (exercício)
-│   ├── 02b_trigger_pipeline_to_do.py  # Task 2: Trigger via API (exercício)
-│   ├── 02c_qualidade_to_do.py         # Task 3: Quality checks (exercício)
-│   ├── 02d_resumo_to_do.py            # Task 4: Resumo da execução (exercício)
-│   ├── 02e_validacao_completo.py      # Task 1: Referência completa
-│   ├── 02f_trigger_pipeline_completo.py # Task 2: Referência completa
-│   ├── 02g_qualidade_completo.py      # Task 3: Referência completa
-│   └── 02h_resumo_completo.py         # Task 4: Referência completa
+│   ├── 02a_validacao_to_do.py         # Task 1: Validação de dados (código completo)
+│   ├── 02b_trigger_pipeline_to_do.py  # Task 2: Trigger pipeline via API (código completo)
+│   ├── 02c_qualidade_to_do.py         # Task 3: Quality checks (código completo)
+│   └── 02d_resumo_to_do.py            # Task 4: Resumo da execução (código completo)
 │
 ├── 03_Lab_ML/
 │   ├── 03a_ml_to_do.py                # ML com TO-DOs (exercício)
@@ -228,27 +224,41 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 **Conceito**: Orquestrar múltiplas tarefas como um DAG (Directed Acyclic Graph), automatizar execuções com scheduling e monitorar resultados.
 
 **O que você vai fazer:**
-1. **Completar os TO-DOs** em cada notebook de tarefa
-2. **Criar um Job** com 4 tarefas encadeadas
-3. **Configurar scheduling** e monitoramento
 
-| TO-DO | Descrição | Notebook | Dificuldade |
-|-------|-----------|----------|-------------|
-| 1 | Validar existência e contagem das tabelas | `02a` | ⭐ |
-| 2 | Validar integridade referencial | `02a` | ⭐⭐ |
-| 3 | Trigger do pipeline SDP via API | `02b` | ⭐⭐ |
-| 4 | Checar valor de frete positivo | `02c` | ⭐ |
-| 5 | Validar dados na gold | `02c` | ⭐ |
-| 6 | Criar resumo de execução | `02d` | ⭐⭐ |
+| Atividade | Descrição |
+|-----------|-----------|
+| 1 | **Ler os notebooks** — Abra `02a`, `02b`, `02c` e `02d` e leia célula a célula para entender o que cada um faz |
+| 2 | **Criar o Job** via UI — Monte a orquestração das 4 tarefas como um DAG no Workflows |
+| 3 | **Executar e analisar logs** — Execute o job, verifique os logs de cada tarefa |
+| 4 | **Criar um novo job com task Pipeline** — Em vez de usar o notebook `02b` (API), use uma task do tipo **Pipeline** nativa do Databricks |
 
-**Para criar o Job:**
+**O que cada notebook faz:**
+- `02a_validacao` — Valida existência e contagem mínima das tabelas raw + integridade referencial motoristas→caminhões
+- `02b_trigger_pipeline` — Dispara o pipeline SDP via REST API e monitora o status até conclusão
+- `02c_qualidade` — Verifica qualidade dos dados na silver (frete > 0) e na gold (dados existem, sem negativos)
+- `02d_resumo` — Gera inventário de todas as tabelas nos schemas raw, silver e gold com contagem e timestamps
+
+**Para criar o Job (Atividade 2):**
 1. Vá em **Workflows** → **Jobs** → **Create Job**
 2. Nome: `job_logistica_{seu_nome}`
-3. Adicione 4 tarefas na seguinte ordem:
+3. **Importante:** Em **Job parameters**, adicione o parâmetro: Key: `nome_participante` → Value: `{seu_nome}`
+4. Adicione 4 tarefas (tipo **Notebook**) na seguinte ordem, cada uma apontando para o notebook correspondente:
 
 ```
-Task 1: Validação  ──→  Task 2: Trigger Pipeline  ──→  Task 3: Qualidade  ──→  Task 4: Resumo
+Task 1: Validação (02a)  ──→  Task 2: Trigger Pipeline (02b)  ──→  Task 3: Qualidade (02c)  ──→  Task 4: Resumo (02d)
 ```
+
+5. Execute e acompanhe os logs de cada tarefa
+
+**Para criar o Job com task Pipeline (Atividade 4):**
+1. Crie um **novo Job** (`job_logistica_{seu_nome}_v2`)
+2. Em **Job parameters**, adicione: Key: `nome_participante` → Value: `{seu_nome}`
+3. Monte o DAG com 4 tarefas:
+   - Task 1: **Notebook** → `02a_validacao_to_do.py`
+   - Task 2: **Pipeline** → selecione o pipeline `pipeline_logistica_{seu_nome}` (em vez do notebook 02b)
+   - Task 3: **Notebook** → `02c_qualidade_to_do.py` (depende da Task 2)
+   - Task 4: **Notebook** → `02d_resumo_to_do.py` (depende da Task 3)
+4. Compare os logs e o comportamento com o Job anterior
 
 ---
 
