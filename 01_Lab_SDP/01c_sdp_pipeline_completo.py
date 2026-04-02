@@ -118,7 +118,7 @@ def bronze_pedidos():
         .option("multiLine", "true")
         .schema(pedido_schema)
         .load(path_pedidos_json)
-        .withColumn("arquivo_origem", F.input_file_name())
+        .withColumn("arquivo_origem", F.col("_metadata.file_path"))
         .withColumn("data_ingestao", F.current_timestamp())
     )
 
@@ -152,7 +152,7 @@ def bronze_status():
         .option("multiLine", "true")
         .schema(status_schema)
         .load(path_status_json)
-        .withColumn("arquivo_origem", F.input_file_name())
+        .withColumn("arquivo_origem", F.col("_metadata.file_path"))
         .withColumn("data_ingestao", F.current_timestamp())
     )
 
