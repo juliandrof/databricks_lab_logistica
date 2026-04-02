@@ -85,9 +85,32 @@ print(f"Rotas unicas: {df_pedidos.select('cidade_origem', 'cidade_destino').dist
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### 1.2 Feature Engineering
+# MAGIC ### 1.2 O que e Feature Engineering?
 # MAGIC
-# MAGIC Precisamos transformar os dados brutos de pedidos em features uteis para o modelo.
+# MAGIC **Feature Engineering** e o processo de transformar dados brutos em variaveis (features) que um modelo de Machine Learning consiga utilizar para fazer previsoes. E considerada uma das etapas mais importantes de um projeto de ML — frequentemente tem mais impacto na qualidade do modelo do que a escolha do algoritmo.
+# MAGIC
+# MAGIC **Por que e necessario?**
+# MAGIC - Modelos de ML nao entendem dados brutos como textos, datas ou JSONs diretamente
+# MAGIC - Precisamos criar **representacoes numericas** que capturem os padroes relevantes
+# MAGIC - Boas features permitem que ate modelos simples tenham alta performance
+# MAGIC
+# MAGIC **Tipos comuns de features:**
+# MAGIC | Tipo | Exemplo | Tecnica |
+# MAGIC |------|---------|---------|
+# MAGIC | **Temporal** | Semana, mes, dia da semana | Extrair de colunas de data |
+# MAGIC | **Agregada** | Peso medio, valor medio por rota | groupBy + avg/sum/count |
+# MAGIC | **Lag (historica)** | Volume da semana anterior | Window + lag() |
+# MAGIC | **Categorica** | Rota (origem → destino) | Concatenacao de colunas |
+# MAGIC | **Derivada** | Frete por kg | Divisao entre colunas |
+# MAGIC
+# MAGIC **No nosso caso:** vamos transformar pedidos brutos em features agregadas por semana e rota, com uma lag feature que captura a tendencia de demanda.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 1.3 Criando as Features
+# MAGIC
+# MAGIC Agora vamos aplicar Feature Engineering nos dados de pedidos.
 # MAGIC
 # MAGIC **Features planejadas:**
 # MAGIC - `semana`: numero da semana do ano
