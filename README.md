@@ -115,7 +115,7 @@ O workshop segue a arquitetura **Medallion (Bronze → Silver → Gold)**, proce
 | `CREATE VOLUME` | Schema Owner | Setup |
 | Cluster / Compute | `CAN ATTACH TO` | Todos |
 | SQL Warehouse | `CAN USE` | Lab 4 |
-| Delta Live Tables | `CAN MANAGE` | Lab 1 |
+| Spark Declarative Pipelines (SDP) | `CAN MANAGE` | Lab 1 |
 | Workflows / Jobs | `CAN MANAGE` | Lab 2 |
 | MLflow Experiments | `CAN MANAGE` | Lab 3 |
 | AI/BI Dashboards | `CAN CREATE` | Lab 4 |
@@ -199,7 +199,7 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 **O que você vai fazer:**
 1. **Iniciar o gerador de streaming** (`01a_gerador_streaming.py`) — gera JSONs de pedidos, NFs e status a cada 5 minutos
 2. **Completar os TO-DOs** (`01b_sdp_pipeline_to_do.py`) — 6 exercícios
-3. **Configurar e executar o pipeline** via UI do Delta Live Tables
+3. **Configurar e executar o pipeline** via UI do Spark Declarative Pipelines
 
 | TO-DO | Descrição | Dificuldade |
 |-------|-----------|-------------|
@@ -212,12 +212,12 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 
 > 💡 **Dica**: Em caso de dúvida, consulte o arquivo `01c_sdp_pipeline_completo.py` como referência.
 
-**Para configurar o pipeline DLT:**
-1. Vá em **Workflows** → **Delta Live Tables** → **Create Pipeline**
+**Para configurar o pipeline SDP:**
+1. Vá em **Workflows** → **Spark Declarative Pipelines** → **Create Pipeline**
 2. Nome: `pipeline_logistica_{seu_nome}`
 3. Source code: `01_Lab_SDP/01b_sdp_pipeline_to_do.py`
 4. Target catalog: `workshop_logistica_{seu_nome}`
-5. Target schema: `default`
+5. **Não defina um target schema único** — cada tabela já usa fully qualified name (`catalog.schema.tabela`), permitindo escrita em múltiplos schemas (bronze, silver, gold)
 6. Em **Configuration**, adicione: `pipeline.nome_participante` = `{seu_nome}`
 7. Compute: **Serverless** (recomendado)
 

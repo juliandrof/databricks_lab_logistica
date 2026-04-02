@@ -6,6 +6,9 @@
 # MAGIC Esta e a versao de referencia com todos os TO-DOs implementados.
 # MAGIC Use como gabarito para conferir suas respostas.
 # MAGIC
+# MAGIC **Importante:** Com SDP, cada tabela usa o fully qualified name (`catalog.schema.tabela`),
+# MAGIC permitindo que um unico pipeline escreva em multiplos schemas de destino.
+# MAGIC
 # MAGIC **Camadas:**
 # MAGIC - **Bronze**: Ingestao de dados brutos (Auto Loader + tabelas raw)
 # MAGIC - **Silver**: Limpeza, validacao e enriquecimento
@@ -102,7 +105,7 @@ pedido_schema = StructType([
 ])
 
 @dlt.table(
-    name="bronze_pedidos",
+    name=f"{catalog_name}.bronze.bronze_pedidos",
     comment="Pedidos ingeridos via Auto Loader a partir do volume de streaming",
     table_properties={"quality": "bronze"},
 )
@@ -138,7 +141,7 @@ status_schema = StructType([
 ])
 
 @dlt.table(
-    name="bronze_status",
+    name=f"{catalog_name}.bronze.bronze_status",
     comment="Status de transporte ingeridos via Auto Loader",
     table_properties={"quality": "bronze"},
 )
@@ -165,7 +168,7 @@ def bronze_status():
 # COMMAND ----------
 
 @dlt.table(
-    name="bronze_clientes",
+    name=f"{catalog_name}.bronze.bronze_clientes",
     comment="Tabela de clientes do schema raw",
     table_properties={"quality": "bronze"},
 )
@@ -174,7 +177,7 @@ def bronze_clientes():
 
 
 @dlt.table(
-    name="bronze_caminhoes",
+    name=f"{catalog_name}.bronze.bronze_caminhoes",
     comment="Tabela de caminhoes do schema raw",
     table_properties={"quality": "bronze"},
 )
@@ -183,7 +186,7 @@ def bronze_caminhoes():
 
 
 @dlt.table(
-    name="bronze_motoristas",
+    name=f"{catalog_name}.bronze.bronze_motoristas",
     comment="Tabela de motoristas do schema raw",
     table_properties={"quality": "bronze"},
 )
@@ -198,7 +201,7 @@ def bronze_motoristas():
 # COMMAND ----------
 
 @dlt.table(
-    name="bronze_movimento_cargas",
+    name=f"{catalog_name}.bronze.bronze_movimento_cargas",
     comment="Tabela de movimento de cargas do schema raw",
     table_properties={"quality": "bronze"},
 )
@@ -220,7 +223,7 @@ def bronze_movimento_cargas():
 # COMMAND ----------
 
 @dlt.table(
-    name="silver_pedidos",
+    name=f"{catalog_name}.silver.silver_pedidos",
     comment="Pedidos enriquecidos com dados do cliente e validacoes de qualidade",
     table_properties={"quality": "silver"},
 )
@@ -228,8 +231,8 @@ def bronze_movimento_cargas():
 @dlt.expect_or_warn("peso_positivo", "peso_total_kg > 0")
 @dlt.expect_or_drop("valor_frete_valido", "valor_frete >= 0")
 def silver_pedidos():
-    pedidos = dlt.read_stream("bronze_pedidos")
-    clientes = dlt.read("bronze_clientes")
+    pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
+    clientes = dlt.read(f"{catalog_name}.bronze.bronze_clientes")
 
     return (
         pedidos
@@ -270,13 +273,13 @@ def silver_pedidos():
 # COMMAND ----------
 
 @dlt.table(
-    name="silver_itens_nf",
+    name=f"{catalog_name}.silver.silver_itens_nf",
     comment="Itens de nota fiscal explodidos a partir dos pedidos",
     table_properties={"quality": "silver"},
 )
 @dlt.expect_or_drop("quantidade_valida", "quantidade > 0")
 def silver_itens_nf():
-    pedidos = dlt.read_stream("bronze_pedidos")
+    pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
 
     # TO-DO 3 RESOLVIDO: Explode das notas fiscais e depois dos itens
     return (
@@ -339,14 +342,14 @@ def silver_itens_nf():
 # COMMAND ----------
 
 @dlt.table(
-    name="silver_status_transporte",
+    name=f"{catalog_name}.silver.silver_status_transporte",
     comment="Status de transporte enriquecido com descricao do status",
     table_properties={"quality": "silver"},
 )
 # TO-DO 4 RESOLVIDO: Expectation para dropar registros sem id_carga
 @dlt.expect_or_drop("carga_valida", "id_carga IS NOT NULL")
 def silver_status_transporte():
-    status = dlt.read_stream("bronze_status")
+    status = dlt.read_stream(f"{catalog_name}.bronze.bronze_status")
     status_ref = spark.read.table(f"{catalog_name}.raw.status_transporte_ref")
 
     return (
@@ -385,12 +388,12 @@ def silver_status_transporte():
 # COMMAND ----------
 
 @dlt.table(
-    name="gold_volume_por_rota",
+    name=f"{catalog_name}.gold.gold_volume_por_rota",
     comment="Volume de pedidos agregado por rota (origem-destino)",
     table_properties={"quality": "gold"},
 )
 def gold_volume_por_rota():
-    pedidos = dlt.read("silver_pedidos")
+    pedidos = dlt.read(f"{catalog_name}.silver.silver_pedidos")
 
     # TO-DO 5 RESOLVIDO: Agregacao por rota origem-destino
     return (
@@ -415,13 +418,13 @@ def gold_volume_por_rota():
 # COMMAND ----------
 
 @dlt.table(
-    name="gold_performance_frota",
+    name=f"{catalog_name}.gold.gold_performance_frota",
     comment="Performance agregada da frota por tipo de caminhao",
     table_properties={"quality": "gold"},
 )
 def gold_performance_frota():
-    cargas = dlt.read("bronze_movimento_cargas")
-    caminhoes = dlt.read("bronze_caminhoes")
+    cargas = dlt.read(f"{catalog_name}.bronze.bronze_movimento_cargas")
+    caminhoes = dlt.read(f"{catalog_name}.bronze.bronze_caminhoes")
 
     return (
         cargas
@@ -445,12 +448,12 @@ def gold_performance_frota():
 # COMMAND ----------
 
 @dlt.table(
-    name="gold_status_entregas",
+    name=f"{catalog_name}.gold.gold_status_entregas",
     comment="Resumo do status atual das entregas (ultimo status por carga)",
     table_properties={"quality": "gold"},
 )
 def gold_status_entregas():
-    status = dlt.read("silver_status_transporte")
+    status = dlt.read(f"{catalog_name}.silver.silver_status_transporte")
 
     # TO-DO 6 RESOLVIDO: Window function para ultimo status + agregacao
     # Passo 1: Definir window para pegar o registro mais recente por carga

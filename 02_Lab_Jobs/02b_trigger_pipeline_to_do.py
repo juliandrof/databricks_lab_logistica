@@ -3,7 +3,7 @@
 # MAGIC %md
 # MAGIC # Lab 2b - Trigger do Pipeline SDP (TO-DO)
 # MAGIC
-# MAGIC Neste notebook, dispararemos a execucao de um pipeline Delta Live Tables (SDP)
+# MAGIC Neste notebook, dispararemos a execucao de um pipeline SDP (Spark Declarative Pipelines)
 # MAGIC via REST API do Databricks e monitoraremos seu status ate a conclusao.
 # MAGIC
 # MAGIC **Tarefas:**
