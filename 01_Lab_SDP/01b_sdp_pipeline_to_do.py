@@ -198,23 +198,21 @@ def bronze_motoristas():
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 1: Criar materialized view bronze_movimento_cargas    ║
-# ║  Dica: Use @dlt.table decorator com fully qualified name.    ║
-# ║        Leia de spark.read.table(f"{catalog_name}.raw.        ║
-# ║        movimento_cargas")                                     ║
-# ║  Exemplo:                                                     ║
-# ║    @dlt.table(                                                ║
-# ║        name=f"{catalog_name}.bronze.bronze_movimento_cargas", ║
-# ║        comment="...",                                         ║
-# ║        table_properties={"quality": "bronze"})                ║
-# ║    def bronze_movimento_cargas():                              ║
-# ║        return spark.read.table(...)                            ║
+# ║  TO-DO 1: Completar o return para ler a tabela               ║
+# ║           movimento_cargas do schema raw                      ║
+# ║  Dica: Siga o mesmo padrao das tabelas acima.                 ║
+# ║        Use spark.read.table(f"{catalog_name}.raw.___")        ║
 # ╚══════════════════════════════════════════════════════════════╝
-# ▼▼▼ Seu codigo aqui ▼▼▼
 
-pass
-
-# ▲▲▲ Fim do TO-DO 1 ▲▲▲
+@dlt.table(
+    name=f"{catalog_name}.bronze.bronze_movimento_cargas",
+    comment="Tabela de movimento de cargas do schema raw",
+    table_properties={"quality": "bronze"},
+)
+def bronze_movimento_cargas():
+    # ▼▼▼ Seu codigo aqui — substitua None pela leitura da tabela ▼▼▼
+    return None  # spark.read.table(f"{catalog_name}.raw.???")
+    # ▲▲▲ Fim do TO-DO 1 ▲▲▲
 
 # COMMAND ----------
 
@@ -293,18 +291,11 @@ def silver_pedidos():
 # COMMAND ----------
 
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  TO-DO 3: Explodir os itens das notas fiscais                ║
-# ║  Dica: Use F.explode() em duas etapas:                       ║
-# ║    1) F.explode("notas_fiscais").alias("nf")                  ║
-# ║    2) F.explode("nf.itens").alias("item")                     ║
-# ║  Depois selecione os campos de pedido, nf e item.             ║
-# ║  Exemplo:                                                     ║
-# ║    pedidos.select("id_pedido", "id_cliente",                   ║
-# ║        F.explode("notas_fiscais").alias("nf"))                 ║
-# ║    .select("id_pedido", "id_cliente", "nf.id_nf",             ║
-# ║        F.explode("nf.itens").alias("item"))                    ║
-# ║    .select("id_pedido", "id_cliente", "id_nf",                ║
-# ║        "item.descricao", "item.quantidade", ...)               ║
+# ║  TO-DO 3: Completar o segundo explode para extrair os itens  ║
+# ║  O primeiro explode (notas_fiscais → nf) ja esta feito.      ║
+# ║  Falta explodir nf.itens e extrair os campos do item.        ║
+# ║  Dica: Use F.explode("nf.itens").alias("item") e depois      ║
+# ║        selecione os campos com F.col("item.descricao"), etc.  ║
 # ╚══════════════════════════════════════════════════════════════╝
 
 @dlt.table(
@@ -316,10 +307,31 @@ def silver_pedidos():
 def silver_itens_nf():
     pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
 
-    # ▼▼▼ Seu codigo aqui ▼▼▼
+    # Passo 1 (pronto): Explodir notas_fiscais em linhas individuais
+    nfs = (
+        pedidos
+        .select(
+            "id_pedido", "id_cliente", "data_pedido",
+            "cidade_origem", "uf_origem", "cidade_destino", "uf_destino",
+            F.explode("notas_fiscais").alias("nf"),
+        )
+        .select(
+            "id_pedido", "id_cliente", "data_pedido",
+            "cidade_origem", "uf_origem", "cidade_destino", "uf_destino",
+            F.col("nf.id_nf").alias("id_nf"),
+            F.col("nf.numero_nf").alias("numero_nf"),
+            F.col("nf.data_emissao").alias("data_emissao_nf"),
+            F.col("nf.valor_total").alias("valor_total_nf"),
+            F.col("nf.itens").alias("itens"),
+        )
+    )
 
-    return pedidos  # Substitua pelo codigo de explode
-
+    # Passo 2 (TO-DO): Explodir itens e extrair campos
+    # ▼▼▼ Seu codigo aqui — substitua o return abaixo ▼▼▼
+    # Dica: nfs.select(..., F.explode("itens").alias("item"))
+    #       .select(..., F.col("item.descricao").alias("descricao"),
+    #                    F.col("item.quantidade").alias("quantidade"), ...)
+    return nfs  # Substitua: explodir "itens" e extrair campos do item
     # ▲▲▲ Fim do TO-DO 3 ▲▲▲
 
 # COMMAND ----------
@@ -392,25 +404,26 @@ def gold_volume_por_rota():
     pedidos = dlt.read(f"{catalog_name}.silver.silver_pedidos")
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 5: Criar a agregacao por rota                        ║
-    # ║  Dica: Use .groupBy() com as colunas de origem e destino,   ║
-    # ║        e .agg() com as funcoes de agregacao.                 ║
-    # ║  Exemplo:                                                    ║
-    # ║    pedidos.groupBy(                                          ║
-    # ║        "cidade_origem", "uf_origem",                         ║
-    # ║        "cidade_destino", "uf_destino"                        ║
-    # ║    ).agg(                                                    ║
-    # ║        F.count("id_pedido").alias("total_pedidos"),          ║
-    # ║        F.sum("peso_total_kg").alias("peso_total"),           ║
-    # ║        F.sum("valor_frete").alias("valor_frete_total"),      ║
-    # ║        F.avg("valor_frete").alias("frete_medio"),            ║
-    # ║    )                                                         ║
+    # ║  TO-DO 5: Completar as 2 funcoes de agregacao faltando       ║
+    # ║  O groupBy e as 2 primeiras metricas ja estao prontos.       ║
+    # ║  Adicione: F.sum("valor_frete") e F.avg("valor_frete")      ║
     # ╚══════════════════════════════════════════════════════════════╝
-    # ▼▼▼ Seu codigo aqui ▼▼▼
 
-    return pedidos  # Substitua pela agregacao
-
-    # ▲▲▲ Fim do TO-DO 5 ▲▲▲
+    return (
+        pedidos
+        .groupBy(
+            "cidade_origem", "uf_origem",
+            "cidade_destino", "uf_destino",
+        )
+        .agg(
+            F.count("id_pedido").alias("total_pedidos"),
+            F.sum("peso_total_kg").alias("peso_total"),
+            # ▼▼▼ Seu codigo aqui — adicione as 2 metricas faltando ▼▼▼
+            # F.sum("valor_frete").alias("valor_frete_total"),
+            # F.avg("valor_frete").alias("frete_medio"),
+            # ▲▲▲ Fim do TO-DO 5 ▲▲▲
+        )
+    )
 
 # COMMAND ----------
 
@@ -458,25 +471,25 @@ def gold_status_entregas():
     status = dlt.read(f"{catalog_name}.silver.silver_status_transporte")
 
     # ╔══════════════════════════════════════════════════════════════╗
-    # ║  TO-DO 6: Criar agregacao do status mais recente por carga   ║
-    # ║  Dica:                                                       ║
-    # ║    1) Use Window para pegar o ultimo status de cada carga:   ║
-    # ║       w = Window.partitionBy("id_carga")                     ║
-    # ║           .orderBy(F.col("timestamp").desc())                ║
-    # ║    2) Adicione row_number e filtre rn == 1                    ║
-    # ║    3) Faca groupBy("descricao_status") e conte               ║
-    # ║  Exemplo:                                                     ║
-    # ║    w = Window.partitionBy("id_carga").orderBy(               ║
-    # ║        F.col("timestamp").desc())                             ║
-    # ║    ultimo_status = (status                                    ║
-    # ║        .withColumn("rn", F.row_number().over(w))             ║
-    # ║        .filter(F.col("rn") == 1))                            ║
-    # ║    resultado = ultimo_status.groupBy("descricao_status")     ║
-    # ║        .agg(F.count("id_carga").alias("total_cargas"),       ║
-    # ║             F.avg("ordem").alias("ordem_media"))              ║
+    # ║  TO-DO 6: Completar o groupBy final sobre ultimo_status      ║
+    # ║  A window function e o filtro ja estao prontos.              ║
+    # ║  Faca um groupBy("descricao_status", "id_status", "ordem")  ║
+    # ║  com F.count("id_carga").alias("total_cargas")               ║
     # ╚══════════════════════════════════════════════════════════════╝
-    # ▼▼▼ Seu codigo aqui ▼▼▼
 
-    return status  # Substitua pela agregacao com window function
+    # Passo 1 (pronto): Window para pegar o status mais recente por carga
+    w = Window.partitionBy("id_carga").orderBy(F.col("timestamp").desc())
+    ultimo_status = (
+        status
+        .withColumn("rn", F.row_number().over(w))
+        .filter(F.col("rn") == 1)
+        .drop("rn")
+    )
 
+    # Passo 2 (TO-DO): Agregar por descricao_status
+    # ▼▼▼ Seu codigo aqui — substitua o return abaixo ▼▼▼
+    # Dica: ultimo_status.groupBy("descricao_status", "id_status", "ordem")
+    #       .agg(F.count("id_carga").alias("total_cargas"))
+    #       .orderBy("ordem")
+    return ultimo_status  # Substitua pelo groupBy + agg
     # ▲▲▲ Fim do TO-DO 6 ▲▲▲
