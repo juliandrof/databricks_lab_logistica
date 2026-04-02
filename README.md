@@ -279,7 +279,7 @@ Task 1: Validação  ──→  Task 2: Trigger Pipeline  ──→  Task 3: Qua
 **O que você vai fazer:**
 1. **Criar views otimizadas** para dashboarding
 2. **Configurar um Genie Room** com contexto das tabelas
-3. **Criar um Dashboard Lakeview** com KPIs, gráficos e **mapa de entregas**
+3. **Criar um AI/BI Dashboard** com KPIs, gráficos e **mapa de entregas**
 4. **Testar o Genie** com perguntas em português
 
 | TO-DO | Descrição | Dificuldade |

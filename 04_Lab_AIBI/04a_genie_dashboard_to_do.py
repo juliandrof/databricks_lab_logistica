@@ -8,7 +8,7 @@
 # MAGIC 1. Criar **views no schema gold** otimizadas para dashboards (mapas, KPIs, gráficos)
 # MAGIC 2. Adicionar **comentários** às tabelas para o Genie entender o contexto dos dados
 # MAGIC 3. Configurar um **Genie Room** para perguntas em linguagem natural
-# MAGIC 4. Montar um **Lakeview Dashboard** operacional completo
+# MAGIC 4. Montar um **AI/BI Dashboard** operacional completo
 # MAGIC
 # MAGIC ### Schemas disponíveis:
 # MAGIC | Schema | Tabelas |
@@ -274,9 +274,9 @@ pass
 
 # MAGIC %md
 # MAGIC ---
-# MAGIC # Seção 4: Criando o Lakeview Dashboard
+# MAGIC # Seção 4: Criando o AI/BI Dashboard
 # MAGIC
-# MAGIC Agora vamos criar um **Dashboard Operacional** completo usando o AI/BI Dashboards (Lakeview).
+# MAGIC Agora vamos criar um **Dashboard Operacional** completo usando o AI/BI Dashboards.
 # MAGIC
 # MAGIC ## Visão Geral do Dashboard
 # MAGIC
@@ -505,7 +505,7 @@ print("Verifique se todas as views mostram ✅ antes de prosseguir!")
 # MAGIC - ✅ Views otimizadas para dashboards (com coordenadas para mapas!)
 # MAGIC - ✅ Comentários nas tabelas para o Genie
 # MAGIC - ✅ Genie Room configurado para perguntas em linguagem natural
-# MAGIC - ✅ Dashboard Lakeview com KPIs, mapas, gráficos e tabelas
+# MAGIC - ✅ AI/BI Dashboard com KPIs, mapas, gráficos e tabelas
 # MAGIC
 # MAGIC ### Próximos passos:
 # MAGIC - Explore o Genie Room fazendo perguntas sobre a operação
