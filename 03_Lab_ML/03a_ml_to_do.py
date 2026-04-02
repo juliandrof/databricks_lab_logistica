@@ -34,7 +34,7 @@ print(f"✅ Usando catálogo: {catalog_name}")
 
 # COMMAND ----------
 
-# MAGIC %pip install mlflow scikit-learn matplotlib
+# MAGIC %pip install mlflow scikit-learn matplotlib typing_extensions --upgrade --quiet
 
 # COMMAND ----------
 
