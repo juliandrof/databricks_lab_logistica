@@ -243,8 +243,8 @@ pass
 @dlt.expect("peso_positivo", "peso_total_kg > 0")
 @dlt.expect_or_drop("valor_frete_valido", "valor_frete >= 0")
 def silver_pedidos():
-    pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
-    clientes = dlt.read(f"{catalog_name}.bronze.bronze_clientes")
+    pedidos = dlt.read_stream("bronze_pedidos")
+    clientes = dlt.read("bronze_clientes")
 
     pedidos_enriquecidos = (
         pedidos
@@ -318,7 +318,7 @@ def silver_pedidos():
 )
 @dlt.expect_or_drop("quantidade_valida", "quantidade > 0")
 def silver_itens_nf():
-    pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
+    pedidos = dlt.read_stream("bronze_pedidos")
 
     # ▼▼▼ Seu codigo aqui ▼▼▼
 
@@ -349,7 +349,7 @@ def silver_itens_nf():
 
 # ▲▲▲ Fim do TO-DO 4 ▲▲▲
 def silver_status_transporte():
-    status = dlt.read_stream(f"{catalog_name}.bronze.bronze_status")
+    status = dlt.read_stream("bronze_status")
     status_ref = spark.read.table(f"{catalog_name}.raw.status_transporte_ref")
 
     return (
@@ -393,7 +393,7 @@ def silver_status_transporte():
     table_properties={"quality": "gold"},
 )
 def gold_volume_por_rota():
-    pedidos = dlt.read(f"{catalog_name}.silver.silver_pedidos")
+    pedidos = dlt.read("silver_pedidos")
 
     # ╔══════════════════════════════════════════════════════════════╗
     # ║  TO-DO 5: Criar a agregacao por rota                        ║
@@ -429,8 +429,8 @@ def gold_volume_por_rota():
     table_properties={"quality": "gold"},
 )
 def gold_performance_frota():
-    cargas = dlt.read(f"{catalog_name}.bronze.bronze_movimento_cargas")
-    caminhoes = dlt.read(f"{catalog_name}.bronze.bronze_caminhoes")
+    cargas = dlt.read("bronze_movimento_cargas")
+    caminhoes = dlt.read("bronze_caminhoes")
 
     return (
         cargas
@@ -459,7 +459,7 @@ def gold_performance_frota():
     table_properties={"quality": "gold"},
 )
 def gold_status_entregas():
-    status = dlt.read(f"{catalog_name}.silver.silver_status_transporte")
+    status = dlt.read("silver_status_transporte")
 
     # ╔══════════════════════════════════════════════════════════════╗
     # ║  TO-DO 6: Criar agregacao do status mais recente por carga   ║
