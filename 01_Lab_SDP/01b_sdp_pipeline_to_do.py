@@ -240,7 +240,7 @@ pass
     table_properties={"quality": "silver"},
 )
 @dlt.expect_or_drop("id_pedido_valido", "id_pedido IS NOT NULL")
-@dlt.expect_or_warn("peso_positivo", "peso_total_kg > 0")
+@dlt.expect("peso_positivo", "peso_total_kg > 0")
 @dlt.expect_or_drop("valor_frete_valido", "valor_frete >= 0")
 def silver_pedidos():
     pedidos = dlt.read_stream(f"{catalog_name}.bronze.bronze_pedidos")
