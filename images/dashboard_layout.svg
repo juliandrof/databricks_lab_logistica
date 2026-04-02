@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <defs>
+    <linearGradient id="bgd" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAFBFC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F0F2F5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="540" rx="8" fill="url(#bgd)" stroke="#E0E3E8" stroke-width="1"/>
+
+  <!-- Header bar -->
+  <rect width="900" height="48" rx="8" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <rect x="0" y="40" width="900" height="8" fill="white"/>
+  <text x="20" y="31" font-family="Inter, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1B3A4B">Dashboard Logística - Painel Operacional</text>
+  <rect x="860" y="14" width="20" height="20" rx="4" fill="#E8EAED"/>
+
+  <!-- KPI Row -->
+  <!-- KPI 1: Total Pedidos -->
+  <rect x="16" y="60" width="168" height="72" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="28" y="82" font-family="Inter, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6B7280">Total Pedidos</text>
+  <text x="28" y="114" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#1B3A4B">12.847</text>
+
+  <!-- KPI 2: Taxa de Entrega -->
+  <rect x="192" y="60" width="168" height="72" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="204" y="82" font-family="Inter, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6B7280">Taxa de Entrega</text>
+  <text x="204" y="114" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#1B3A4B">87,3%</text>
+
+  <!-- KPI 3: Peso Total -->
+  <rect x="368" y="60" width="168" height="72" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="380" y="82" font-family="Inter, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6B7280">Peso Total (ton)</text>
+  <text x="380" y="114" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#1B3A4B">4.523</text>
+
+  <!-- KPI 4: Frete Médio -->
+  <rect x="544" y="60" width="168" height="72" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="556" y="82" font-family="Inter, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6B7280">Frete Medio</text>
+  <text x="556" y="114" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#1B3A4B">R$ 482</text>
+
+  <!-- KPI 5: Caminhões Ativos -->
+  <rect x="720" y="60" width="164" height="72" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="732" y="82" font-family="Inter, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6B7280">Caminhoes Ativos</text>
+  <text x="732" y="114" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#1B3A4B">847</text>
+
+  <!-- Chart Row 1 -->
+  <!-- Bar Chart: Volume por UF -->
+  <rect x="16" y="144" width="432" height="180" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="28" y="168" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1B3A4B">Volume por UF (pedidos)</text>
+  <!-- Bars -->
+  <rect x="60" y="188" width="300" height="14" rx="2" fill="#FF3621" opacity="0.9"/>
+  <text x="368" y="200" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">SP  4.250</text>
+  <rect x="60" y="208" width="195" height="14" rx="2" fill="#FF5533" opacity="0.8"/>
+  <text x="263" y="220" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">RJ  2.180</text>
+  <rect x="60" y="228" width="160" height="14" rx="2" fill="#FF7033" opacity="0.7"/>
+  <text x="228" y="240" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">MG  1.650</text>
+  <rect x="60" y="248" width="130" height="14" rx="2" fill="#FF8844" opacity="0.6"/>
+  <text x="198" y="260" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">PR  1.320</text>
+  <rect x="60" y="268" width="105" height="14" rx="2" fill="#FBB300" opacity="0.5"/>
+  <text x="173" y="280" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">RS  980</text>
+  <rect x="60" y="288" width="80" height="14" rx="2" fill="#FBB300" opacity="0.4"/>
+  <text x="148" y="300" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">BA  750</text>
+
+  <!-- Donut Chart: Status das Entregas -->
+  <rect x="456" y="144" width="428" height="180" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="468" y="168" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1B3A4B">Status das Entregas</text>
+  <!-- Donut segments -->
+  <circle cx="600" cy="248" r="55" fill="none" stroke="#388E3C" stroke-width="28" stroke-dasharray="214 346" stroke-dashoffset="0"/>
+  <circle cx="600" cy="248" r="55" fill="none" stroke="#1565C0" stroke-width="28" stroke-dasharray="76 484" stroke-dashoffset="-214"/>
+  <circle cx="600" cy="248" r="55" fill="none" stroke="#FF6F00" stroke-width="28" stroke-dasharray="42 518" stroke-dashoffset="-290"/>
+  <circle cx="600" cy="248" r="55" fill="none" stroke="#E53935" stroke-width="28" stroke-dasharray="14 546" stroke-dashoffset="-332"/>
+  <circle cx="600" cy="248" r="30" fill="white"/>
+  <!-- Legend -->
+  <rect x="710" y="208" width="10" height="10" rx="2" fill="#388E3C"/>
+  <text x="726" y="218" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">Entregue (62%)</text>
+  <rect x="710" y="228" width="10" height="10" rx="2" fill="#1565C0"/>
+  <text x="726" y="238" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">Em Transito (22%)</text>
+  <rect x="710" y="248" width="10" height="10" rx="2" fill="#FF6F00"/>
+  <text x="726" y="258" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">No CD (12%)</text>
+  <rect x="710" y="268" width="10" height="10" rx="2" fill="#E53935"/>
+  <text x="726" y="278" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">Devolvido (4%)</text>
+
+  <!-- Chart Row 2 -->
+  <!-- Top Rotas (barras) -->
+  <rect x="16" y="336" width="432" height="190" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="28" y="360" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1B3A4B">Top Rotas por Volume</text>
+  <!-- Route bars -->
+  <text x="28" y="386" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">SP → RJ</text>
+  <rect x="130" y="376" width="250" height="12" rx="2" fill="#FF3621" opacity="0.85"/>
+  <text x="388" y="386" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">1.845</text>
+  <text x="28" y="406" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">SP → MG</text>
+  <rect x="130" y="396" width="195" height="12" rx="2" fill="#FF3621" opacity="0.75"/>
+  <text x="333" y="406" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">1.320</text>
+  <text x="28" y="426" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">RJ → SP</text>
+  <rect x="130" y="416" width="165" height="12" rx="2" fill="#FF3621" opacity="0.65"/>
+  <text x="303" y="426" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">1.105</text>
+  <text x="28" y="446" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">SP → PR</text>
+  <rect x="130" y="436" width="140" height="12" rx="2" fill="#FF3621" opacity="0.55"/>
+  <text x="278" y="446" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">920</text>
+  <text x="28" y="466" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">MG → RJ</text>
+  <rect x="130" y="456" width="115" height="12" rx="2" fill="#FF3621" opacity="0.45"/>
+  <text x="253" y="466" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">780</text>
+  <text x="28" y="486" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">SP → RS</text>
+  <rect x="130" y="476" width="95" height="12" rx="2" fill="#FBB300" opacity="0.45"/>
+  <text x="233" y="486" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">650</text>
+  <text x="28" y="506" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">PR → SC</text>
+  <rect x="130" y="496" width="78" height="12" rx="2" fill="#FBB300" opacity="0.35"/>
+  <text x="216" y="506" font-family="Inter, Helvetica, Arial, sans-serif" font-size="9" fill="#6B7280">530</text>
+
+  <!-- Table: Performance da Frota -->
+  <rect x="456" y="336" width="428" height="190" rx="6" fill="white" stroke="#E0E3E8" stroke-width="1"/>
+  <text x="468" y="360" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1B3A4B">Performance da Frota por Tipo</text>
+  <!-- Table header -->
+  <rect x="468" y="370" width="404" height="20" rx="0" fill="#F3F4F6"/>
+  <text x="478" y="385" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">Tipo</text>
+  <text x="600" y="385" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">Cargas</text>
+  <text x="680" y="385" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">KM Total</text>
+  <text x="780" y="385" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#374151">Ocupacao</text>
+  <!-- Table rows -->
+  <line x1="468" y1="392" x2="872" y2="392" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="478" y="410" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">Truck</text>
+  <text x="600" y="410" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">1.245</text>
+  <text x="680" y="410" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">342.500</text>
+  <text x="780" y="410" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">78%</text>
+  <line x1="468" y1="418" x2="872" y2="418" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="478" y="436" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">Carreta</text>
+  <text x="600" y="436" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">890</text>
+  <text x="680" y="436" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">567.200</text>
+  <text x="780" y="436" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">82%</text>
+  <line x1="468" y1="444" x2="872" y2="444" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="478" y="462" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">Bi-Truck</text>
+  <text x="600" y="462" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">623</text>
+  <text x="680" y="462" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">289.100</text>
+  <text x="780" y="462" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">71%</text>
+  <line x1="468" y1="470" x2="872" y2="470" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="478" y="488" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">VUC</text>
+  <text x="600" y="488" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">412</text>
+  <text x="680" y="488" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">98.400</text>
+  <text x="780" y="488" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">65%</text>
+  <line x1="468" y1="496" x2="872" y2="496" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="478" y="514" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">Furgao</text>
+  <text x="600" y="514" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">287</text>
+  <text x="680" y="514" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B7280">45.600</text>
+  <text x="780" y="514" font-family="Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#374151">58%</text>
+</svg>
