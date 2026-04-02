@@ -44,7 +44,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
+    print("⚠️ matplotlib nao disponivel — graficos serao ignorados")
 
 # COMMAND ----------
 
@@ -143,18 +147,18 @@ display(df_features.limit(10))
 # COMMAND ----------
 
 # Visualizar distribuicao do volume de pedidos por semana
-pdf_viz = df_features.groupBy("semana").agg(
-    F.sum("total_pedidos").alias("total")
-).orderBy("semana").toPandas()
-
-fig, ax = plt.subplots(figsize=(14, 5))
-ax.bar(pdf_viz["semana"], pdf_viz["total"], color="#FF3621", alpha=0.8)
-ax.set_xlabel("Semana do Ano")
-ax.set_ylabel("Total de Pedidos")
-ax.set_title("Volume de Pedidos por Semana")
-ax.grid(axis="y", alpha=0.3)
-plt.tight_layout()
-plt.show()
+if plt:
+    pdf_viz = df_features.groupBy("semana").agg(
+        F.sum("total_pedidos").alias("total")
+    ).orderBy("semana").toPandas()
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.bar(pdf_viz["semana"], pdf_viz["total"], color="#FF3621", alpha=0.8)
+    ax.set_xlabel("Semana do Ano")
+    ax.set_ylabel("Total de Pedidos")
+    ax.set_title("Volume de Pedidos por Semana")
+    ax.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.show()
 
 # COMMAND ----------
 
@@ -235,19 +239,19 @@ with mlflow.start_run(run_name="demanda_logistica") as run:
 # COMMAND ----------
 
 # Visualizar importancia das features
-importances = model.feature_importances_
-feat_imp = pd.DataFrame({
-    "feature": feature_cols,
-    "importance": importances
-}).sort_values("importance", ascending=True)
-
-fig, ax = plt.subplots(figsize=(10, 5))
-ax.barh(feat_imp["feature"], feat_imp["importance"], color="#00A972", alpha=0.8)
-ax.set_xlabel("Importancia")
-ax.set_title("Importancia das Features - Random Forest")
-ax.grid(axis="x", alpha=0.3)
-plt.tight_layout()
-plt.show()
+if plt:
+    importances = model.feature_importances_
+    feat_imp = pd.DataFrame({
+        "feature": feature_cols,
+        "importance": importances
+    }).sort_values("importance", ascending=True)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.barh(feat_imp["feature"], feat_imp["importance"], color="#00A972", alpha=0.8)
+    ax.set_xlabel("Importancia")
+    ax.set_title("Importancia das Features - Random Forest")
+    ax.grid(axis="x", alpha=0.3)
+    plt.tight_layout()
+    plt.show()
 
 # COMMAND ----------
 
@@ -257,16 +261,17 @@ plt.show()
 # COMMAND ----------
 
 # Grafico de predicao vs valor real
-fig, ax = plt.subplots(figsize=(8, 8))
-ax.scatter(y_test, y_pred, alpha=0.5, color="#1B3139", s=20)
-ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", lw=2, label="Perfeito")
-ax.set_xlabel("Valor Real")
-ax.set_ylabel("Valor Predito")
-ax.set_title("Predicao vs Real - Demanda por Rota")
-ax.legend()
-ax.grid(alpha=0.3)
-plt.tight_layout()
-plt.show()
+if plt:
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.scatter(y_test, y_pred, alpha=0.5, color="#1B3139", s=20)
+    ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", lw=2, label="Perfeito")
+    ax.set_xlabel("Valor Real")
+    ax.set_ylabel("Valor Predito")
+    ax.set_title("Predicao vs Real - Demanda por Rota")
+    ax.legend()
+    ax.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.show()
 
 # COMMAND ----------
 
@@ -514,27 +519,22 @@ print(f"Recomendacoes salvas em {catalog_name}.ml.recomendacao_caminhoes_vazios"
 # COMMAND ----------
 
 # Distribuicao de distancias das recomendacoes
-pdf_dist = df_recomendacoes.select("distancia_km").toPandas()
-
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
-# Histograma de distancias
-axes[0].hist(pdf_dist["distancia_km"], bins=30, color="#FF3621", alpha=0.7, edgecolor="white")
-axes[0].set_xlabel("Distancia (km)")
-axes[0].set_ylabel("Frequencia")
-axes[0].set_title("Distribuicao de Distancias - Recomendacoes")
-axes[0].grid(axis="y", alpha=0.3)
-
-# Contagem por rank
-pdf_rank = df_recomendacoes.groupBy("rank").count().orderBy("rank").toPandas()
-axes[1].bar(pdf_rank["rank"].astype(str), pdf_rank["count"], color="#00A972", alpha=0.8)
-axes[1].set_xlabel("Rank")
-axes[1].set_ylabel("Quantidade")
-axes[1].set_title("Recomendacoes por Rank")
-axes[1].grid(axis="y", alpha=0.3)
-
-plt.tight_layout()
-plt.show()
+if plt:
+    pdf_dist = df_recomendacoes.select("distancia_km").toPandas()
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    axes[0].hist(pdf_dist["distancia_km"], bins=30, color="#FF3621", alpha=0.7, edgecolor="white")
+    axes[0].set_xlabel("Distancia (km)")
+    axes[0].set_ylabel("Frequencia")
+    axes[0].set_title("Distribuicao de Distancias - Recomendacoes")
+    axes[0].grid(axis="y", alpha=0.3)
+    pdf_rank = df_recomendacoes.groupBy("rank").count().orderBy("rank").toPandas()
+    axes[1].bar(pdf_rank["rank"].astype(str), pdf_rank["count"], color="#00A972", alpha=0.8)
+    axes[1].set_xlabel("Rank")
+    axes[1].set_ylabel("Quantidade")
+    axes[1].set_title("Recomendacoes por Rank")
+    axes[1].grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.show()
 
 # COMMAND ----------
 
@@ -670,21 +670,21 @@ display(df_resultado)
 # COMMAND ----------
 
 # Tabela formatada do resultado
-pdf_resultado = df_resultado.toPandas()
-
-fig, ax = plt.subplots(figsize=(10, 4))
-ax.barh(
-    pdf_resultado["placa"] + " (" + pdf_resultado["motorista"] + ")",
-    pdf_resultado["distancia_km"],
-    color=["#FF3621", "#FF6B4A", "#FF9A7B", "#FFC4B0", "#FFE0D5"],
-    edgecolor="white"
-)
-ax.set_xlabel("Distancia (km)")
-ax.set_title(f"Top 5 Caminhoes Mais Proximos - Pedido Surpresa em {pedido_surpresa['cidade']}/{pedido_surpresa['uf']}")
-ax.grid(axis="x", alpha=0.3)
-ax.invert_yaxis()
-plt.tight_layout()
-plt.show()
+if plt:
+    pdf_resultado = df_resultado.toPandas()
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.barh(
+        pdf_resultado["placa"] + " (" + pdf_resultado["motorista"] + ")",
+        pdf_resultado["distancia_km"],
+        color=["#FF3621", "#FF6B4A", "#FF9A7B", "#FFC4B0", "#FFE0D5"],
+        edgecolor="white"
+    )
+    ax.set_xlabel("Distancia (km)")
+    ax.set_title(f"Top 5 Caminhoes Mais Proximos - Pedido Surpresa em {pedido_surpresa['cidade']}/{pedido_surpresa['uf']}")
+    ax.grid(axis="x", alpha=0.3)
+    ax.invert_yaxis()
+    plt.tight_layout()
+    plt.show()
 
 # COMMAND ----------
 

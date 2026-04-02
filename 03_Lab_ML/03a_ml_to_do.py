@@ -45,7 +45,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
+    print("⚠️ matplotlib nao disponivel — graficos serao ignorados")
 
 # COMMAND ----------
 
