@@ -645,15 +645,25 @@ id_item_counter = 1
 for i in range(1, 10001):
     id_cliente = random.randint(1, 1000)
 
-    # Data do pedido nos últimos 90 dias
-    dias_atras = random.randint(0, 90)
+    # Data do pedido nas últimas 6 semanas (42 dias), com volume variado por semana
+    # Semanas mais recentes têm mais pedidos (simula crescimento)
+    semana_pesos = [0.08, 0.10, 0.14, 0.18, 0.22, 0.28]  # semana 6 (mais antiga) -> semana 1 (mais recente)
+    semana_escolhida = random.choices(range(6), weights=semana_pesos)[0]
+    dia_na_semana = random.randint(0, 6)
+    dias_atras = semana_escolhida * 7 + dia_na_semana
     data_pedido = DATA_REFERENCIA - timedelta(days=dias_atras, hours=random.randint(0, 23), minutes=random.randint(0, 59))
 
     tipo_frete = random.choice(TIPOS_FRETE)
     prioridade = random.choices(PRIORIDADES, weights=PESOS_PRIORIDADE)[0]
 
-    cidade_origem_idx = random.randint(0, len(CIDADES) - 1)
-    cidade_destino_idx = random.randint(0, len(CIDADES) - 1)
+    # 70% dos pedidos concentrados nas 10 principais cidades (garante volume por rota para ML)
+    # 30% distribuidos entre todas as cidades (diversidade)
+    if random.random() < 0.70:
+        cidade_origem_idx = random.randint(0, min(9, len(CIDADES) - 1))
+        cidade_destino_idx = random.randint(0, min(9, len(CIDADES) - 1))
+    else:
+        cidade_origem_idx = random.randint(0, len(CIDADES) - 1)
+        cidade_destino_idx = random.randint(0, len(CIDADES) - 1)
     while cidade_destino_idx == cidade_origem_idx:
         cidade_destino_idx = random.randint(0, len(CIDADES) - 1)
 
