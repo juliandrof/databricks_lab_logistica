@@ -96,32 +96,45 @@ PRODUTOS = [
     {"descricao": "Caixa de Brinquedos", "ncm": "95030099", "categoria": "Brinquedos", "peso_medio": 7.0, "valor_medio": 650.0},
 ]
 
-# Status de transporte (ordem logica)
+# Status de transporte — alinhados com a tabela status_transporte_ref do schema raw
 STATUS_TRANSPORTE = [
-    (1, "Carga Registrada"),
-    (2, "Coleta Agendada"),
-    (3, "Em Coleta"),
-    (4, "Coletado"),
-    (5, "No CD Origem"),
-    (6, "Em Transito"),
-    (7, "No CD Destino"),
-    (8, "Saiu para Entrega"),
-    (9, "Entregue"),
-    (10, "Devolvido"),
+    (1,  "Pedido Recebido"),
+    (2,  "Aguardando Coleta"),
+    (3,  "Coleta Realizada"),
+    (4,  "Em Trânsito para CD"),
+    (5,  "Recebido no CD"),
+    (6,  "Em Separação"),
+    (7,  "Carga Consolidada"),
+    (8,  "Saiu para Entrega"),
+    (9,  "Em Trânsito"),
+    (10, "Parada para Descanso"),
+    (11, "Tentativa de Entrega"),
+    (12, "Entrega Realizada"),
+    (13, "Devolvido ao Remetente"),
+    (14, "Extraviado"),
+    (15, "Avaria Registrada"),
 ]
+
+# Pesos para cada status — "Entrega Realizada" (12) com peso alto para gerar dados suficientes para ML
+STATUS_PESOS = [5, 5, 8, 8, 6, 5, 5, 10, 10, 3, 4, 20, 5, 2, 2]
 
 # Observacoes por status
 OBSERVACOES = {
-    1: ["Carga registrada no sistema", "Novo pedido de transporte recebido", "Carga cadastrada aguardando coleta"],
-    2: ["Coleta agendada para o proximo dia util", "Motorista designado para coleta", "Coleta confirmada pelo embarcador"],
-    3: ["Veiculo em deslocamento para coleta", "Motorista a caminho do remetente", "Inicio do processo de coleta"],
-    4: ["Carga coletada com sucesso", "Mercadoria conferida e carregada", "Coleta finalizada sem avarias"],
-    5: ["Carga recebida no centro de distribuicao", "Mercadoria em processo de triagem", "Carga aguardando consolidacao"],
-    6: ["Veiculo em transito na rodovia", "Passagem pelo pedágio registrada", "Transito normal sem intercorrencias"],
-    7: ["Carga chegou ao CD destino", "Mercadoria em conferencia no destino", "Aguardando roteirizacao para entrega"],
-    8: ["Veiculo saiu para entrega final", "Motorista em rota de entrega", "Ultima milha iniciada"],
-    9: ["Entrega realizada com sucesso", "Recebedor assinou o comprovante", "Carga entregue no destino"],
-    10: ["Destinatario ausente - devolvido", "Endereco nao localizado", "Recusa do recebedor"],
+    1:  ["Pedido recebido no sistema", "Novo pedido de transporte registrado"],
+    2:  ["Coleta agendada para o proximo dia util", "Motorista designado para coleta"],
+    3:  ["Coleta realizada com sucesso", "Mercadoria conferida e carregada"],
+    4:  ["Veiculo em deslocamento para CD", "Em transito para centro de distribuicao"],
+    5:  ["Carga recebida no CD", "Mercadoria em processo de triagem"],
+    6:  ["Carga em separacao no CD", "Itens sendo separados para consolidacao"],
+    7:  ["Carga consolidada", "Pronta para despacho"],
+    8:  ["Veiculo saiu para entrega final", "Motorista em rota de entrega"],
+    9:  ["Veiculo em transito na rodovia", "Passagem pelo pedagio registrada"],
+    10: ["Parada obrigatoria para descanso", "Motorista em intervalo regulamentar"],
+    11: ["Tentativa de entrega sem sucesso", "Destinatario ausente"],
+    12: ["Entrega realizada com sucesso", "Recebedor assinou o comprovante", "Carga entregue no destino"],
+    13: ["Devolvido ao remetente", "Recusa do recebedor", "Endereco nao localizado"],
+    14: ["Carga extraviada", "Em processo de investigacao"],
+    15: ["Avaria identificada na carga", "Danos registrados no sistema"],
 }
 
 # COMMAND ----------
@@ -251,7 +264,7 @@ def gerar_status_batch(num_status):
     """Gera um batch de atualizacoes de status de transporte."""
     status_list = []
     for _ in range(num_status):
-        status = random.choice(STATUS_TRANSPORTE)
+        status = random.choices(STATUS_TRANSPORTE, weights=STATUS_PESOS)[0]
         id_status = status[0]
         # Coordenadas aproximadas do Brasil
         lat = round(random.uniform(-33.0, 5.0), 6)
