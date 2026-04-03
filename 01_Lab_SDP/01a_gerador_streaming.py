@@ -177,16 +177,25 @@ def gerar_nota_fiscal(id_pedido):
     }
 
 
-def gerar_pedidos_batch(num_pedidos):
-    """Gera um batch de pedidos com notas fiscais embutidas."""
+def gerar_pedidos_batch(num_pedidos, data_base=None):
+    """Gera um batch de pedidos com notas fiscais embutidas.
+    Se data_base for informada, usa essa data em vez de datetime.now().
+    """
     global _pedido_counter
     pedidos = []
     nfs_standalone = []
 
     for _ in range(num_pedidos):
         _pedido_counter += 1
-        origem = random.choice(CIDADES_UF)
-        destino = random.choice([c for c in CIDADES_UF if c != origem])
+        # 70% das rotas concentradas nas 10 principais cidades (volume para ML)
+        if random.random() < 0.70:
+            origem = random.choice(CIDADES_UF[:10])
+            destino = random.choice(CIDADES_UF[:10])
+        else:
+            origem = random.choice(CIDADES_UF)
+            destino = random.choice(CIDADES_UF)
+        while destino == origem:
+            destino = random.choice(CIDADES_UF)
 
         num_nfs = random.randint(1, 3)
         notas = [gerar_nota_fiscal(_pedido_counter) for _ in range(num_nfs)]
@@ -207,10 +216,15 @@ def gerar_pedidos_batch(num_pedidos):
         tipo_frete = random.choice(["CIF", "FOB"])
         valor_frete = round(valor_mercadoria * random.uniform(0.03, 0.12), 2)
 
+        if data_base:
+            ts = data_base + timedelta(hours=random.randint(0, 23), minutes=random.randint(0, 59))
+        else:
+            ts = datetime.now()
+
         pedido = {
             "id_pedido": _pedido_counter,
             "id_cliente": random.randint(1, 1000),
-            "data_pedido": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "data_pedido": ts.strftime("%Y-%m-%d %H:%M:%S"),
             "peso_total_kg": peso_total,
             "volume_total_m3": volume_total,
             "valor_mercadoria": valor_mercadoria,
@@ -297,7 +311,27 @@ print(f"  Intervalo: {intervalo_segundos}s")
 print("=" * 70)
 print()
 
+# ── Carga historica: gerar 30 dias de dados de uma vez ──
+# Isso garante que o pipeline tenha volume suficiente para ML (lag features)
+print("📦 Gerando carga historica de 30 dias...")
 batch_num = 0
+for dias_atras in range(30, 0, -1):
+    data_dia = datetime.now() - timedelta(days=dias_atras)
+    # Volume variavel por dia (mais pedidos em dias recentes)
+    num_pedidos_dia = random.randint(30, 60) + (30 - dias_atras) * 2
+    num_status_dia = random.randint(80, 150)
+
+    batch_num += 1
+    pedidos, nfs_standalone = gerar_pedidos_batch(num_pedidos_dia, data_base=data_dia)
+    status_updates = gerar_status_batch(num_status_dia)
+    salvar_batch(pedidos, nfs_standalone, status_updates, batch_num)
+    print(f"  Dia -{dias_atras}: {num_pedidos_dia} pedidos | {num_status_dia} status")
+
+print(f"\n✅ Carga historica concluida: {batch_num} arquivos gerados")
+print(f"   Execute o pipeline SDP para processar esses dados.\n")
+
+# ── Loop continuo: gerar dados em tempo real ──
+print("🔄 Iniciando geracao continua...\n")
 
 while True:
     batch_num += 1
