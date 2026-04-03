@@ -130,6 +130,7 @@ print(f"Rotas unicas: {df_pedidos.select('cidade_origem', 'cidade_destino').dist
 # MAGIC Agora vamos aplicar Feature Engineering nos dados de pedidos.
 # MAGIC
 # MAGIC **Features planejadas:**
+# MAGIC - `ano`: ano do pedido (importante para distinguir semanas entre anos diferentes)
 # MAGIC - `semana`: numero da semana do ano
 # MAGIC - `mes`: mes do pedido
 # MAGIC - `dia_da_semana`: dia da semana (1=segunda, 7=domingo)
@@ -198,7 +199,7 @@ df_base = df_pedidos.withColumn(
 # pdf = df_features_clean.toPandas()
 
 # Definir features e target
-feature_cols = ["semana", "mes", "dia_da_semana_medio", "peso_medio", "valor_medio", "total_pedidos_semana_anterior"]
+feature_cols = ["ano", "semana", "mes", "dia_da_semana_medio", "peso_medio", "valor_medio", "total_pedidos_semana_anterior"]
 target_col = "total_pedidos"
 
 # ╔══════════════════════════════════════════════════════════════╗

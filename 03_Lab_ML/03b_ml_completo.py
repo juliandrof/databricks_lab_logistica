@@ -192,7 +192,7 @@ df_features_clean = df_features.filter(F.col("total_pedidos_semana_anterior").is
 pdf = df_features_clean.toPandas()
 
 # Definir features e target
-feature_cols = ["semana", "mes", "dia_da_semana_medio", "peso_medio", "valor_medio", "total_pedidos_semana_anterior"]
+feature_cols = ["ano", "semana", "mes", "dia_da_semana_medio", "peso_medio", "valor_medio", "total_pedidos_semana_anterior"]
 target_col = "total_pedidos"
 
 print(f"Dataset para treino: {len(pdf)} registros")
