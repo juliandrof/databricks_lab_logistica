@@ -17,6 +17,19 @@
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ## Instalacao de Dependencias
+
+# COMMAND ----------
+
+# MAGIC %pip install mlflow scikit-learn matplotlib typing_extensions --upgrade --quiet
+
+# COMMAND ----------
+
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## Configuracao Inicial
 
 # COMMAND ----------
@@ -31,14 +44,6 @@ catalog_name = f"workshop_logistica_{nome_participante}"
 
 spark.sql(f"USE CATALOG {catalog_name}")
 print(f"✅ Usando catálogo: {catalog_name}")
-
-# COMMAND ----------
-
-# MAGIC %pip install mlflow scikit-learn matplotlib typing_extensions --upgrade --quiet
-
-# COMMAND ----------
-
-dbutils.library.restartPython()
 
 # COMMAND ----------
 
