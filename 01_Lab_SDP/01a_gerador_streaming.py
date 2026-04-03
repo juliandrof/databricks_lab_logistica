@@ -2,10 +2,14 @@
 # MAGIC %md
 # MAGIC # Gerador de Dados Streaming - Workshop Logistica
 # MAGIC
-# MAGIC Este notebook gera dados simulados de forma continua para alimentar os volumes de streaming:
+# MAGIC Este notebook gera dados simulados para alimentar os volumes de streaming:
 # MAGIC - **Pedidos JSON** -> `/Volumes/{catalog}/raw/pedidos_json/`
 # MAGIC - **Status JSON** -> `/Volumes/{catalog}/raw/status_json/`
 # MAGIC - **NFs JSON** -> `/Volumes/{catalog}/raw/nfs_json/`
+# MAGIC
+# MAGIC **Fase 1 (automatica):** Gera carga historica de 1 ano (~200k pedidos, ~400k NFs, ~500k status) com crescimento semanal.
+# MAGIC
+# MAGIC **Fase 2 (continua):** Gera novos dados a cada 5 minutos enquanto o notebook estiver rodando.
 # MAGIC
 # MAGIC Execute este notebook e deixe rodando em background enquanto trabalha no pipeline SDP.
 
@@ -311,23 +315,55 @@ print(f"  Intervalo: {intervalo_segundos}s")
 print("=" * 70)
 print()
 
-# ── Carga historica: gerar 30 dias de dados de uma vez ──
-# Isso garante que o pipeline tenha volume suficiente para ML (lag features)
-print("📦 Gerando carga historica de 30 dias...")
+# ── Carga historica: gerar 1 ano de dados (~200k pedidos) ──
+# Volume cresce gradualmente semana a semana para simular crescimento do negocio
+# Cada semana gera 1 arquivo JSON com os pedidos daquela semana
+TOTAL_SEMANAS = 52
+print(f"📦 Gerando carga historica de {TOTAL_SEMANAS} semanas (~1 ano)...")
 batch_num = 0
-for dias_atras in range(30, 0, -1):
-    data_dia = datetime.now() - timedelta(days=dias_atras)
-    # Volume variavel por dia (mais pedidos em dias recentes)
-    num_pedidos_dia = random.randint(30, 60) + (30 - dias_atras) * 2
-    num_status_dia = random.randint(80, 150)
+total_pedidos_historico = 0
+total_nfs_historico = 0
+total_status_historico = 0
 
-    batch_num += 1
-    pedidos, nfs_standalone = gerar_pedidos_batch(num_pedidos_dia, data_base=data_dia)
-    status_updates = gerar_status_batch(num_status_dia)
-    salvar_batch(pedidos, nfs_standalone, status_updates, batch_num)
-    print(f"  Dia -{dias_atras}: {num_pedidos_dia} pedidos | {num_status_dia} status")
+for semana in range(TOTAL_SEMANAS, 0, -1):
+    # Volume crescente: semana 52 (mais antiga) ~300 pedidos, semana 1 (mais recente) ~700
+    base_pedidos = int(300 + (TOTAL_SEMANAS - semana) * 8)  # crescimento ~8 pedidos/semana
+    # Variacao aleatoria de +/- 15% para parecer organico
+    num_pedidos_semana = int(base_pedidos * random.uniform(0.85, 1.15))
 
-print(f"\n✅ Carga historica concluida: {batch_num} arquivos gerados")
+    # Distribuir pedidos ao longo dos 7 dias da semana
+    for dia in range(7):
+        dias_atras = semana * 7 - dia
+        if dias_atras <= 0:
+            continue
+        data_dia = datetime.now() - timedelta(days=dias_atras)
+
+        # Mais pedidos em dias uteis (seg-sex) do que fim de semana
+        if dia < 5:  # seg-sex
+            pedidos_dia = int(num_pedidos_semana * random.uniform(0.16, 0.20))
+        else:  # sab-dom
+            pedidos_dia = int(num_pedidos_semana * random.uniform(0.04, 0.08))
+
+        if pedidos_dia < 5:
+            pedidos_dia = 5
+
+        num_status_dia = int(pedidos_dia * random.uniform(2.0, 4.0))
+
+        batch_num += 1
+        pedidos, nfs_standalone = gerar_pedidos_batch(pedidos_dia, data_base=data_dia)
+        status_updates = gerar_status_batch(num_status_dia)
+        salvar_batch(pedidos, nfs_standalone, status_updates, batch_num)
+
+        total_pedidos_historico += len(pedidos)
+        total_nfs_historico += len(nfs_standalone)
+        total_status_historico += len(status_updates)
+
+    if semana % 10 == 0 or semana <= 3:
+        print(f"  Semana -{semana}: ~{num_pedidos_semana} pedidos (base: {base_pedidos})")
+
+print(f"\n✅ Carga historica concluida!")
+print(f"   📦 {total_pedidos_historico:,} pedidos | {total_nfs_historico:,} NFs | {total_status_historico:,} status")
+print(f"   📁 {batch_num} arquivos JSON gerados")
 print(f"   Execute o pipeline SDP para processar esses dados.\n")
 
 # ── Loop continuo: gerar dados em tempo real ──

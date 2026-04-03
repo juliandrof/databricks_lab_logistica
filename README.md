@@ -88,13 +88,23 @@ O workshop segue a arquitetura **Medallion (Bronze → Silver → Gold)**, proce
 | `clientes` | 1.000 | Empresas do Sudeste com CNPJ, coordenadas geográficas |
 | `caminhoes` | 1.000 | Frota com tipos VUC a Rodotrem, capacidades e dimensões |
 | `motoristas` | 1.000 | Motoristas vinculados a caminhões, com CNH e avaliação |
-| `pedidos` | 10.000+ | Pedidos com totais calculados a partir dos itens das NFs (peso, volume, valor, frete) e array de NF IDs |
+| `pedidos` | 10.000 | Pedidos cadastrais (tabela raw batch) |
 | `notas_fiscais` | 60.000 | NFs vinculadas a pedidos com chave de acesso |
 | `itens_nf` | ~240.000 | Itens detalhados por NF (produtos, pesos, dimensões) |
 | `movimento_cargas` | 5.000 | Cargas em transporte com rotas e pedidos (JSON) |
 | `historico_status` | 10.000+ | Tracking de status com geolocalização |
 | `status_transporte_ref` | 15 | Tabela de referência de status |
 | `produtos_referencia` | 200 | Produtos transportados com NCM e categorias |
+
+**Dados de Streaming (gerados pelo `01a_gerador_streaming.py`):**
+
+| Dado | Volume | Descrição |
+|------|--------|-----------|
+| Pedidos (JSON) | ~200.000 | 1 ano de histórico com crescimento semanal (~300→700 pedidos/semana) |
+| Notas Fiscais (JSON) | ~400.000 | 1-3 NFs por pedido, cada uma com 2-5 itens |
+| Status (JSON) | ~500.000 | Tracking de entregas com geolocalização |
+
+> O gerador cria automaticamente a carga histórica de 52 semanas na primeira execução, antes de iniciar o loop contínuo.
 
 ---
 
@@ -193,7 +203,7 @@ https://github.com/juliandrof/databricks_lab_logistica.git
 **Conceito**: Construir um pipeline de dados completo usando a abordagem declarativa do Databricks, com ingestão streaming via Auto Loader e transformações em camadas.
 
 **O que você vai fazer:**
-1. **Iniciar o gerador de streaming** (`01a_gerador_streaming.py`) — gera JSONs de pedidos, NFs e status a cada 5 minutos
+1. **Iniciar o gerador de streaming** (`01a_gerador_streaming.py`) — gera 1 ano de dados históricos (~200k pedidos) e depois inicia geração contínua a cada 5 minutos
 2. **Configurar o pipeline** via UI do Databricks (veja instruções abaixo)
 3. **Completar os TO-DOs** (`01b_sdp_pipeline_to_do.py`) — 5 exercícios e executar o pipeline
 
