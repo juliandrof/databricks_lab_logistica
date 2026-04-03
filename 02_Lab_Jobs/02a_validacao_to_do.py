@@ -38,7 +38,7 @@ tabelas_esperadas = {
     "clientes": 1000,
     "caminhoes": 1000,
     "motoristas": 1000,
-    "pedidos": 10000,
+    "pedidos": 50000,
 }
 
 # COMMAND ----------

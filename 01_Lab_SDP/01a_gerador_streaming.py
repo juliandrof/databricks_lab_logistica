@@ -7,7 +7,7 @@
 # MAGIC - **Status JSON** -> `/Volumes/{catalog}/raw/status_json/`
 # MAGIC - **NFs JSON** -> `/Volumes/{catalog}/raw/nfs_json/`
 # MAGIC
-# MAGIC **Fase 1 (automatica):** Gera carga historica de 1 ano (~200k pedidos, ~400k NFs, ~500k status) com crescimento semanal.
+# MAGIC **Fase 1 (automatica):** Exporta os dados historicos de `raw` (gerados pelo `01_dados_cadastrais.py`) como JSONs nested nos volumes para o Auto Loader consumir.
 # MAGIC
 # MAGIC **Fase 2 (continua):** Gera novos dados a cada 5 minutos enquanto o notebook estiver rodando.
 # MAGIC
@@ -331,54 +331,129 @@ print(f"  Intervalo: {intervalo_segundos}s")
 print("=" * 70)
 print()
 
-# ── Carga historica: gerar 1 ano de dados (~200k pedidos) ──
-# Volume cresce gradualmente semana a semana para simular crescimento do negocio
-# Cada semana gera 1 arquivo JSON com os pedidos daquela semana
-TOTAL_SEMANAS = 52
-print(f"📦 Gerando carga historica de {TOTAL_SEMANAS} semanas (~1 ano)...")
+# ── Carga historica: ler de raw e escrever como JSON nested nos volumes ──
+# Os dados com integridade referencial foram gerados pelo 01_dados_cadastrais.py
+# Aqui apenas transformamos em JSONs nested para o Auto Loader consumir
+print("📦 Exportando dados historicos de raw para volumes JSON...")
 batch_num = 0
-total_pedidos_historico = 0
-total_nfs_historico = 0
-total_status_historico = 0
 
-for semana in range(TOTAL_SEMANAS, 0, -1):
-    # Volume crescente: semana 52 (mais antiga) ~300 pedidos, semana 1 (mais recente) ~700
-    base_pedidos = int(300 + (TOTAL_SEMANAS - semana) * 8)  # crescimento ~8 pedidos/semana
-    # Variacao aleatoria de +/- 15% para parecer organico
-    num_pedidos_semana = int(base_pedidos * random.uniform(0.85, 1.15))
+# Ler pedidos, NFs e itens do schema raw
+df_pedidos_raw = spark.table(f"{catalog_name}.raw.pedidos")
+df_nfs_raw = spark.table(f"{catalog_name}.raw.notas_fiscais")
+df_itens_raw = spark.table(f"{catalog_name}.raw.itens_nf")
 
-    # Distribuir pedidos ao longo dos 7 dias da semana
-    for dia in range(7):
-        dias_atras = semana * 7 - dia
-        if dias_atras <= 0:
-            continue
-        data_dia = datetime.now() - timedelta(days=dias_atras)
+total_pedidos = df_pedidos_raw.count()
+print(f"  Pedidos em raw: {total_pedidos:,}")
 
-        # Mais pedidos em dias uteis (seg-sex) do que fim de semana
-        if dia < 5:  # seg-sex
-            pedidos_dia = int(num_pedidos_semana * random.uniform(0.16, 0.20))
-        else:  # sab-dom
-            pedidos_dia = int(num_pedidos_semana * random.uniform(0.04, 0.08))
+# Converter para Pandas para montar JSONs nested
+pdf_pedidos = df_pedidos_raw.toPandas()
+pdf_nfs = df_nfs_raw.toPandas()
+pdf_itens = df_itens_raw.toPandas()
 
-        if pedidos_dia < 5:
-            pedidos_dia = 5
+# Indexar NFs e itens por FK para lookup rapido
+nfs_por_pedido = pdf_nfs.groupby("id_pedido")
+itens_por_nf = pdf_itens.groupby("id_nf")
 
-        num_status_dia = int(pedidos_dia * random.uniform(2.0, 4.0))
+# Gerar JSONs em batches de ~500 pedidos (1 arquivo por batch)
+BATCH_SIZE = 500
+pedidos_list = pdf_pedidos.to_dict("records")
 
-        batch_num += 1
-        pedidos, nfs_standalone = gerar_pedidos_batch(pedidos_dia, data_base=data_dia)
-        status_updates = gerar_status_batch(num_status_dia, data_base=data_dia)
-        salvar_batch(pedidos, nfs_standalone, status_updates, batch_num)
+for start in range(0, len(pedidos_list), BATCH_SIZE):
+    batch_num += 1
+    batch_pedidos = pedidos_list[start:start + BATCH_SIZE]
+    pedidos_json = []
+    nfs_json = []
 
-        total_pedidos_historico += len(pedidos)
-        total_nfs_historico += len(nfs_standalone)
-        total_status_historico += len(status_updates)
+    for ped in batch_pedidos:
+        id_pedido = ped["id_pedido"]
+        notas_nested = []
 
-    if semana % 10 == 0 or semana <= 3:
-        print(f"  Semana -{semana}: ~{num_pedidos_semana} pedidos (base: {base_pedidos})")
+        if id_pedido in nfs_por_pedido.groups:
+            for _, nf in nfs_por_pedido.get_group(id_pedido).iterrows():
+                itens_nested = []
+                if nf["id_nf"] in itens_por_nf.groups:
+                    for _, item in itens_por_nf.get_group(nf["id_nf"]).iterrows():
+                        itens_nested.append({
+                            "id_item": int(item["id_item"]),
+                            "descricao": str(item.get("descricao", "")),
+                            "ncm": str(item.get("ncm", "")),
+                            "quantidade": int(item.get("quantidade", 1)),
+                            "unidade": str(item.get("unidade", "UN")),
+                            "valor_unitario": float(item.get("valor_unitario", 0)),
+                            "valor_total": float(item.get("valor_total", 0)),
+                            "peso_kg": float(item.get("peso_kg", 0)),
+                            "dimensoes": {
+                                "comprimento_cm": int(item.get("comprimento_cm", 0)),
+                                "largura_cm": int(item.get("largura_cm", 0)),
+                                "altura_cm": int(item.get("altura_cm", 0)),
+                            },
+                        })
+                nf_dict = {
+                    "id_nf": int(nf["id_nf"]),
+                    "numero_nf": str(nf.get("numero_nf", "")),
+                    "id_pedido": int(id_pedido),
+                    "data_emissao": str(nf.get("data_emissao", "")),
+                    "valor_total": float(nf.get("valor_total", 0)),
+                    "chave_acesso": str(nf.get("chave_acesso", "")),
+                    "itens": itens_nested,
+                }
+                notas_nested.append(nf_dict)
+                nfs_json.append(nf_dict)
+
+        pedido_dict = {
+            "id_pedido": int(ped["id_pedido"]),
+            "id_cliente": int(ped["id_cliente"]),
+            "data_pedido": str(ped["data_pedido"]),
+            "peso_total_kg": float(ped.get("peso_total_kg", 0)),
+            "volume_total_m3": float(ped.get("volume_total_m3", 0)),
+            "valor_mercadoria": float(ped.get("valor_mercadoria", 0)),
+            "valor_frete": float(ped.get("valor_frete", 0)),
+            "tipo_frete": str(ped.get("tipo_frete", "")),
+            "prioridade": str(ped.get("prioridade", "")),
+            "cidade_origem": str(ped.get("cidade_origem", "")),
+            "uf_origem": str(ped.get("uf_origem", "")),
+            "cidade_destino": str(ped.get("cidade_destino", "")),
+            "uf_destino": str(ped.get("uf_destino", "")),
+            "notas_fiscais": notas_nested,
+        }
+        pedidos_json.append(pedido_dict)
+
+    # Salvar pedidos e NFs como JSON
+    timestamp = f"hist_{batch_num:04d}"
+    path_p = f"{PATH_PEDIDOS}/pedidos_batch_{timestamp}.json"
+    path_n = f"{PATH_NFS}/nfs_batch_{timestamp}.json"
+    with open(path_p, "w", encoding="utf-8") as f:
+        json.dump(pedidos_json, f, ensure_ascii=False, default=str)
+    with open(path_n, "w", encoding="utf-8") as f:
+        json.dump(nfs_json, f, ensure_ascii=False, default=str)
+
+    if batch_num % 20 == 0 or start + BATCH_SIZE >= len(pedidos_list):
+        print(f"  Batch {batch_num}: {start+1}-{min(start+BATCH_SIZE, len(pedidos_list))} de {len(pedidos_list)} pedidos")
+
+# Exportar status (historico_status) como JSON
+df_hist_status = spark.table(f"{catalog_name}.raw.historico_status")
+pdf_status = df_hist_status.toPandas()
+status_list = []
+for _, row in pdf_status.iterrows():
+    status_list.append({
+        "id_carga": int(row["id_carga"]),
+        "id_status": int(row["id_status"]),
+        "timestamp": str(row["timestamp"]),
+        "observacao": str(row.get("observacao", "")),
+        "latitude": float(row.get("latitude", 0)),
+        "longitude": float(row.get("longitude", 0)),
+    })
+
+# Salvar status em batches
+for start in range(0, len(status_list), 1000):
+    batch_num += 1
+    batch_status = status_list[start:start + 1000]
+    path_s = f"{PATH_STATUS}/status_batch_hist_{batch_num:04d}.json"
+    with open(path_s, "w", encoding="utf-8") as f:
+        json.dump(batch_status, f, ensure_ascii=False, default=str)
 
 print(f"\n✅ Carga historica concluida!")
-print(f"   📦 {total_pedidos_historico:,} pedidos | {total_nfs_historico:,} NFs | {total_status_historico:,} status")
+print(f"   📦 {total_pedidos:,} pedidos exportados de raw para volumes JSON")
 print(f"   📁 {batch_num} arquivos JSON gerados")
 print(f"   Execute o pipeline SDP para processar esses dados.\n")
 

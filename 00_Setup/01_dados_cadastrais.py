@@ -12,8 +12,8 @@
 # MAGIC | 3 | motoristas | 1.000 |
 # MAGIC | 4 | status_transporte_ref | 15 |
 # MAGIC | 5 | produtos_referencia | 200 |
-# MAGIC | 6 | pedidos | 10.000 |
-# MAGIC | 7 | notas_fiscais + itens_nf | ~60.000 + variável |
+# MAGIC | 6 | pedidos | 50.000 |
+# MAGIC | 7 | notas_fiscais + itens_nf | ~150.000 + ~500.000 |
 # MAGIC | 8 | movimento_cargas | 5.000 |
 # MAGIC | 9 | historico_status | 10.000 |
 
@@ -642,15 +642,20 @@ itens_data = []
 id_nf_counter = 1
 id_item_counter = 1
 
-for i in range(1, 10001):
+TOTAL_PEDIDOS = 50000
+TOTAL_SEMANAS = 52
+
+for i in range(1, TOTAL_PEDIDOS + 1):
     id_cliente = random.randint(1, 1000)
 
-    # Data do pedido nas últimas 6 semanas (42 dias), com volume variado por semana
-    # Semanas mais recentes têm mais pedidos (simula crescimento)
-    semana_pesos = [0.08, 0.10, 0.14, 0.18, 0.22, 0.28]  # semana 6 (mais antiga) -> semana 1 (mais recente)
-    semana_escolhida = random.choices(range(6), weights=semana_pesos)[0]
+    # Data do pedido nas últimas 52 semanas com crescimento gradual
+    # Semanas mais recentes têm mais pedidos (simula crescimento do negócio)
+    semana_escolhida = random.choices(
+        range(TOTAL_SEMANAS),
+        weights=[300 + s * 8 for s in range(TOTAL_SEMANAS)]  # ~300 (antiga) → ~716 (recente)
+    )[0]
     dia_na_semana = random.randint(0, 6)
-    dias_atras = semana_escolhida * 7 + dia_na_semana
+    dias_atras = (TOTAL_SEMANAS - semana_escolhida) * 7 + dia_na_semana
     data_pedido = DATA_REFERENCIA - timedelta(days=dias_atras, hours=random.randint(0, 23), minutes=random.randint(0, 59))
 
     tipo_frete = random.choice(TIPOS_FRETE)
@@ -758,7 +763,7 @@ for i in range(1, 10001):
     ))
 
     if i % 2000 == 0:
-        print(f"  Gerados {i}/10000 pedidos...")
+        print(f"  Gerados {i}/{TOTAL_PEDIDOS} pedidos...")
 
 print(f"✅ Gerados {len(pedidos_data)} pedidos, {len(notas_data)} NFs e {len(itens_data)} itens com integridade referencial.")
 
@@ -856,7 +861,7 @@ STATUS_POSSIVEIS = [s[1] for s in status_data]
 
 cargas_data = []
 # Manter referência de pedidos disponíveis
-pedidos_ids = list(range(1, 10001))
+pedidos_ids = list(range(1, TOTAL_PEDIDOS + 1))
 random.shuffle(pedidos_ids)
 pedido_idx = 0
 
@@ -874,8 +879,8 @@ for i in range(1, 5001):
     c_orig = CIDADES[cidade_origem_idx]
     c_dest = CIDADES[cidade_destino_idx]
 
-    # Data de saída nos últimos 90 dias
-    dias_atras = random.randint(0, 90)
+    # Data de saída nas últimas 52 semanas
+    dias_atras = random.randint(0, 364)
     data_saida = DATA_REFERENCIA - timedelta(days=dias_atras, hours=random.randint(0, 23))
     data_prevista = data_saida + timedelta(hours=random.randint(6, 120))
 
