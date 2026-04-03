@@ -175,19 +175,21 @@ def gerar_item_nf():
     }
 
 
-def gerar_nota_fiscal(id_pedido):
+def gerar_nota_fiscal(id_pedido, data_base=None):
     """Gera uma nota fiscal com itens."""
     global _nf_counter
     _nf_counter += 1
     num_itens = random.randint(2, 5)
     itens = [gerar_item_nf() for _ in range(num_itens)]
     valor_total = round(sum(i["valor_total"] for i in itens), 2)
+    ts = data_base if data_base else datetime.now()
+    data_emissao = ts + timedelta(hours=random.randint(1, 48))
 
     return {
         "id_nf": _nf_counter,
         "numero_nf": str(random.randint(100000, 999999)),
         "id_pedido": id_pedido,
-        "data_emissao": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "data_emissao": data_emissao.strftime("%Y-%m-%d %H:%M:%S"),
         "valor_total": valor_total,
         "chave_acesso": "".join([str(random.randint(0, 9)) for _ in range(44)]),
         "itens": itens,
@@ -215,7 +217,7 @@ def gerar_pedidos_batch(num_pedidos, data_base=None):
             destino = random.choice(CIDADES_UF)
 
         num_nfs = random.randint(1, 3)
-        notas = [gerar_nota_fiscal(_pedido_counter) for _ in range(num_nfs)]
+        notas = [gerar_nota_fiscal(_pedido_counter, data_base=data_base) for _ in range(num_nfs)]
 
         peso_total = round(sum(sum(i["peso_kg"] for i in nf["itens"]) for nf in notas), 2)
         volume_total = round(
@@ -260,7 +262,7 @@ def gerar_pedidos_batch(num_pedidos, data_base=None):
     return pedidos, nfs_standalone
 
 
-def gerar_status_batch(num_status):
+def gerar_status_batch(num_status, data_base=None):
     """Gera um batch de atualizacoes de status de transporte."""
     status_list = []
     for _ in range(num_status):
@@ -269,11 +271,12 @@ def gerar_status_batch(num_status):
         # Coordenadas aproximadas do Brasil
         lat = round(random.uniform(-33.0, 5.0), 6)
         lon = round(random.uniform(-73.0, -35.0), 6)
+        ts = data_base + timedelta(hours=random.randint(0, 23), minutes=random.randint(0, 59)) if data_base else datetime.now()
 
         status_list.append({
             "id_carga": random.randint(1, 5000),
             "id_status": id_status,
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": ts.strftime("%Y-%m-%d %H:%M:%S"),
             "observacao": random.choice(OBSERVACOES[id_status]),
             "latitude": lat,
             "longitude": lon,
@@ -364,7 +367,7 @@ for semana in range(TOTAL_SEMANAS, 0, -1):
 
         batch_num += 1
         pedidos, nfs_standalone = gerar_pedidos_batch(pedidos_dia, data_base=data_dia)
-        status_updates = gerar_status_batch(num_status_dia)
+        status_updates = gerar_status_batch(num_status_dia, data_base=data_dia)
         salvar_batch(pedidos, nfs_standalone, status_updates, batch_num)
 
         total_pedidos_historico += len(pedidos)
