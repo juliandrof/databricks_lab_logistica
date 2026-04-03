@@ -159,16 +159,22 @@ display(df_features.limit(10))
 
 # COMMAND ----------
 
-# Visualizar distribuicao do volume de pedidos por semana
+# Visualizar distribuicao do volume de pedidos por semana (considerando o ano)
 if plt:
-    pdf_viz = df_features.groupBy("semana").agg(
+    pdf_viz = df_features.withColumn(
+        "ano_semana", F.concat(F.col("ano"), F.lit("_W"), F.lpad(F.col("semana"), 2, "0"))
+    ).groupBy("ano_semana").agg(
         F.sum("total_pedidos").alias("total")
-    ).orderBy("semana").toPandas()
-    fig, ax = plt.subplots(figsize=(14, 5))
-    ax.bar(pdf_viz["semana"], pdf_viz["total"], color="#FF3621", alpha=0.8)
-    ax.set_xlabel("Semana do Ano")
+    ).orderBy("ano_semana").toPandas()
+    fig, ax = plt.subplots(figsize=(16, 5))
+    ax.bar(range(len(pdf_viz)), pdf_viz["total"], color="#FF3621", alpha=0.8)
+    # Mostrar labels a cada 4 semanas para nao poluir o eixo
+    tick_positions = range(0, len(pdf_viz), 4)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(pdf_viz["ano_semana"].iloc[list(tick_positions)], rotation=45, ha="right")
+    ax.set_xlabel("Ano_Semana")
     ax.set_ylabel("Total de Pedidos")
-    ax.set_title("Volume de Pedidos por Semana")
+    ax.set_title("Volume de Pedidos por Semana (52 semanas)")
     ax.grid(axis="y", alpha=0.3)
     plt.tight_layout()
     plt.show()
