@@ -137,9 +137,9 @@ databricks_lab_logistica/
 │   └── 01_dados_cadastrais.py         # Gera todos os dados sintéticos
 │
 ├── 01_Lab_SDP/
-│   ├── 01a_gerador_streaming.py       # Gerador contínuo de JSONs (pedidos, NFs, status)
-│   ├── 01b_sdp_pipeline_to_do.py      # Pipeline SDP com TO-DOs (exercício)
-│   └── 01c_sdp_pipeline_completo.py   # Pipeline SDP completo (referência)
+│   ├── 01a_gerador_streaming.py       # Exporta raw → JSON nested + geração contínua
+│   ├── 01b_sdp_pipeline_to_do.py      # Pipeline SDP com 5 TO-DOs (descomentar)
+│   └── 01c_sdp_pipeline_completo.py   # Pipeline SDP completo (gabarito)
 │
 ├── 02_Lab_Jobs/
 │   ├── 02a_validacao_to_do.py         # Task 1: Validação de dados (código completo)
@@ -148,12 +148,12 @@ databricks_lab_logistica/
 │   └── 02d_resumo_to_do.py            # Task 4: Resumo da execução (código completo)
 │
 ├── 03_Lab_ML/
-│   ├── 03a_ml_to_do.py                # ML com TO-DOs (exercício)
-│   └── 03b_ml_completo.py             # ML completo (referência)
+│   ├── 03a_ml_to_do.py                # ML com 5 TO-DOs (descomentar)
+│   └── 03b_ml_completo.py             # ML completo (gabarito)
 │
 ├── 04_Lab_AIBI/
-│   ├── 04a_genie_dashboard_to_do.py   # AI/BI com TO-DOs (exercício)
-│   └── 04b_genie_dashboard_completo.py # AI/BI completo (referência)
+│   ├── 04a_genie_dashboard_to_do.py   # AI/BI com TO-DOs (descomentar)
+│   └── 04b_genie_dashboard_completo.py # AI/BI completo (gabarito)
 │
 ├── images/                             # Diagramas e imagens
 └── README.md                           # Este arquivo
@@ -275,13 +275,13 @@ Task 1: Validação (02a)  ──→  Task 2: Trigger Pipeline (02b)  ──→ 
 2. **Caminhões Vazios** — Identificar caminhões ociosos e match com pedidos próximos
 3. **Pedidos Surpresa** — Encontrar o caminhão mais próximo com capacidade disponível
 
-| TO-DO | Descrição | Use Case | Dificuldade |
-|-------|-----------|----------|-------------|
-| 1 | Criar features de demanda | Predição | ⭐⭐ |
-| 2 | Treinar modelo com MLflow | Predição | ⭐⭐ |
-| 3 | Implementar distância Haversine | Caminhões Vazios | ⭐⭐ |
-| 4 | Encontrar caminhão para pedido surpresa | Pedido Surpresa | ⭐⭐⭐ |
-| 5 | Registrar modelo no Unity Catalog | MLflow | ⭐ |
+| TO-DO | Descrição | O que fazer |
+|-------|-----------|-------------|
+| 1 | Features de demanda (ano, semana, rota, lag) | Descomentar bloco de groupBy + Window lag |
+| 2 | Treinar RandomForest com MLflow | Descomentar bloco de train/test + MLflow autolog |
+| 3 | UDF distância Haversine | Descomentar função + registro como UDF |
+| 4 | Encontrar 5 caminhões mais próximos | Descomentar bloco de joins + haversine + top 5 |
+| 5 | Registrar modelo no Unity Catalog | Descomentar bloco de search_runs + register_model |
 
 ---
 
