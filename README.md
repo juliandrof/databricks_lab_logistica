@@ -152,8 +152,7 @@ databricks_lab_logistica/
 │   └── 03b_ml_completo.py             # ML completo (gabarito)
 │
 ├── 04_Lab_AIBI/
-│   ├── 04a_genie_dashboard_to_do.py   # AI/BI com TO-DOs (descomentar)
-│   └── 04b_genie_dashboard_completo.py # AI/BI completo (gabarito)
+│   └── 04_genie_dashboard.py          # AI/BI Genie + Dashboard completo
 │
 ├── images/                             # Diagramas e imagens
 └── README.md                           # Este arquivo
@@ -290,17 +289,10 @@ Task 1: Validação (02a)  ──→  Task 2: Trigger Pipeline (02b)  ──→ 
 **Conceito**: Criar um dashboard operacional interativo com mapas e utilizar o Genie para permitir que qualquer pessoa faça perguntas aos dados em linguagem natural.
 
 **O que você vai fazer:**
-1. **Criar views otimizadas** para dashboarding
+1. **Executar o notebook** `04_genie_dashboard.py` para criar views otimizadas
 2. **Configurar um Genie Room** com contexto das tabelas
 3. **Criar um AI/BI Dashboard** com KPIs, gráficos e **mapa de entregas**
 4. **Testar o Genie** com perguntas em português
-
-| TO-DO | Descrição | Dificuldade |
-|-------|-----------|-------------|
-| 1 | Criar view geográfica para mapa de entregas | ⭐⭐ |
-| 2 | Criar view de volume diário | ⭐ |
-| 3 | Adicionar comentários para Genie | ⭐ |
-| 4 | Query de status para KPI cards | ⭐ |
 
 **Sugestão de layout do Dashboard:**
 
